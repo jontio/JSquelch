@@ -1,0 +1,2 @@
+# JSquelch
+Voice detection code
