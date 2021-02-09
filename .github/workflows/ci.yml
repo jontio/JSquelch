@@ -2,7 +2,7 @@ name: CI
 
 # Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
+  # Triggers the workflow on push event but only for the main branch
   #push:
   #  branches: [ main ]
   # Allows you to run this workflow manually from the Actions tab
@@ -19,19 +19,18 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
-      #- uses: jurplel/install-qt-action@v2.12.1
 
       # Runs a single command using the runners shell
       - name: Setup dependencies
         run: |
           sudo apt-get install qt5-default cpputest
+          
       # Runs a set of commands using the runners shell
       - name: Run unit tests
         run: |
           qmake CONFIG+=CI
           make
-          ./jsquelch
+          ./jsquelch -v
           echo finished testing.
           
       # Build application
@@ -40,9 +39,9 @@ jobs:
           make clean
           qmake CONFIG-=CI
           make
-          ./jsquelch
           echo finished build.
           
+      # upload artifact    
       - name: Upload build
         uses: actions/upload-artifact@v2
         with:
