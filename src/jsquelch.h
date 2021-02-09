@@ -18,6 +18,6 @@ public:
 
 private:
     Ui::JSquelch *ui;
-    JDsp::MovingAverage<double> ma=JDsp::MovingAverage<double>(-2);
+    JDsp::MovingAverage<double> ma=JDsp::MovingAverage<double>(2);
 };
 #endif // JSQUELCH_H

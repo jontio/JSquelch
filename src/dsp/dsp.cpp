@@ -34,7 +34,7 @@ void MovingAverage<T>::setSize(int number)
     if(MASz>0)delete [] MABuffer;
     MASz=number;
     MASum=0;
-    if(MASz<0)RUNTIME_ERROR("array size needs to be positive", number);
+    if(MASz<0)RUNTIME_ERROR("array size needs to be non negative", number);
     if(MASz)MABuffer=new T[MASz];
     for(int i=0;i<MASz;i++)MABuffer[i]=0;
     MAPtr=0;
