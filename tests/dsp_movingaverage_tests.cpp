@@ -1,7 +1,10 @@
-#include "CppUTest/TestHarness.h"
 #include "../src/dsp/dsp.h"
 #include "../src/util/RuntimeError.h"
 #include <complex>
+
+//important for Qt include cpputest last as it mucks up new and causes compiling to fail
+#include "CppUTest/TestHarness.h"
+
 
 TEST_GROUP(Test_DSP_MovingAverage)
 {
@@ -29,7 +32,7 @@ TEST(Test_DSP_MovingAverage, QuantizationZeroInt)
         double f = 2.0*((double)rand() / RAND_MAX)-1.0;
         int i=f*10000;
         ave+=i;
-        ma.Update(i);
+        ma.update(i);
     }
     ave/=ma_sz;
     LONGS_EQUAL(ave,ma.val);
@@ -47,7 +50,7 @@ TEST(Test_DSP_MovingAverage, MultipleQuantizationResettingComplex)
         double f2 = 2.0*((double)rand() / RAND_MAX)-1.0;
         f2*=100000000000000000.0;
         std::complex<double> z=std::complex<double>(f1,f2);
-        ma.Update(z);
+        ma.update(z);
     }
 
     //quantization should be removed after n*ma_sz updates for n being an integer
@@ -58,7 +61,7 @@ TEST(Test_DSP_MovingAverage, MultipleQuantizationResettingComplex)
         double f2 = 2.0*((double)rand() / RAND_MAX)-1.0;
         std::complex<double> z=std::complex<double>(f1,f2);
         ave+=z;
-        ma.Update(z);
+        ma.update(z);
     }
     ave/=(double)ma_sz;
     CHECK_EQUAL(ave.real(),ma.val.real());
@@ -74,7 +77,7 @@ TEST(Test_DSP_MovingAverage, MultipleQuantizationResettingDouble)
     {
         double f = 2.0*((double)rand() / RAND_MAX)-1.0;
         f*=100000000000000000.0;
-        ma.Update(f);
+        ma.update(f);
     }
 
     //quantization should be removed after n*ma_sz updates for n being an integer
@@ -83,7 +86,7 @@ TEST(Test_DSP_MovingAverage, MultipleQuantizationResettingDouble)
     {
         double f = 2.0*((double)rand() / RAND_MAX)-1.0;
         ave+=f;
-        ma.Update(f);
+        ma.update(f);
     }
     ave/=(double)ma_sz;
     CHECK_EQUAL(ave,ma.val);
@@ -103,7 +106,7 @@ TEST(Test_DSP_MovingAverage, QuantizationResettingComplex)
         double f2 = 2.0*((double)rand() / RAND_MAX)-1.0;
         f2*=100000000000000000.0;
         std::complex<double> z=std::complex<double>(f1,f2);
-        ma.Update(z);
+        ma.update(z);
     }
 
     //quantization should be removed after ma_sz updates
@@ -114,7 +117,7 @@ TEST(Test_DSP_MovingAverage, QuantizationResettingComplex)
         double f2 = 2.0*((double)rand() / RAND_MAX)-1.0;
         std::complex<double> z=std::complex<double>(f1,f2);
         ave+=z;
-        ma.Update(z);
+        ma.update(z);
     }
     ave/=(double)ma_sz;
     CHECK_EQUAL(ave.real(),ma.val.real());
@@ -130,7 +133,7 @@ TEST(Test_DSP_MovingAverage, QuantizationResettingDouble)
     {
         double f = 2.0*((double)rand() / RAND_MAX)-1.0;
         f*=100000000000000000.0;
-        ma.Update(f);
+        ma.update(f);
     }
 
     //quantization should be removed after ma_sz updates
@@ -139,7 +142,7 @@ TEST(Test_DSP_MovingAverage, QuantizationResettingDouble)
     {
         double f = 2.0*((double)rand() / RAND_MAX)-1.0;
         ave+=f;
-        ma.Update(f);
+        ma.update(f);
     }
     ave/=(double)ma_sz;
     CHECK_EQUAL(ave,ma.val);
@@ -190,7 +193,7 @@ TEST(Test_DSP_MovingAverage, ResetOnChangeSizeComplex)
     for(int k=0;k<10;k++)
     {
         std::complex<double> z=std::complex<double>(k,-k);
-        ma.Update(z);
+        ma.update(z);
     }
     ma.setSize(20);
     DOUBLES_EQUAL(0,ma.val.real(),0.0000000000001);
@@ -200,7 +203,7 @@ TEST(Test_DSP_MovingAverage, ResetOnChangeSizeComplex)
 TEST(Test_DSP_MovingAverage, ResetOnChangeSizeInt)
 {
     JDsp::MovingAverage<int> ma=JDsp::MovingAverage<int>(10);
-    for(int k=0;k<10;k++)ma.Update(k);
+    for(int k=0;k<10;k++)ma.update(k);
     ma.setSize(20);
     LONGS_EQUAL(0,ma.val);
 }
@@ -208,7 +211,7 @@ TEST(Test_DSP_MovingAverage, ResetOnChangeSizeInt)
 TEST(Test_DSP_MovingAverage, ResetOnChangeSizeDouble)
 {
     JDsp::MovingAverage<double> ma=JDsp::MovingAverage<double>(10);
-    for(int k=0;k<10;k++)ma.Update(k);
+    for(int k=0;k<10;k++)ma.update(k);
     ma.setSize(20);
     DOUBLES_EQUAL(0,ma.val,0.0000000000001);
 }
@@ -220,7 +223,7 @@ TEST(Test_DSP_MovingAverage, SmallMeanComplex)
     for(int k=0;k<9;k++)
     {
         std::complex<double> z=std::complex<double>(k,-k);
-        ma.Update(z);
+        ma.update(z);
     }
     DOUBLES_EQUAL(3.6,ma.val.real(),0.0000000000001);
     DOUBLES_EQUAL(-3.6,ma.val.imag(),0.0000000000001);
@@ -230,7 +233,7 @@ TEST(Test_DSP_MovingAverage, SmallMeanInt)
 {
     //must not sum size else resetting is done and test is pointless
     JDsp::MovingAverage<int> ma=JDsp::MovingAverage<int>(10);
-    for(int k=0;k<9;k++)ma.Update(k);
+    for(int k=0;k<9;k++)ma.update(k);
     LONGS_EQUAL(3,ma.val);
 }
 
@@ -238,7 +241,7 @@ TEST(Test_DSP_MovingAverage, SmallMeanDouble)
 {
     //must not sum size else resetting is done and test is pointless
     JDsp::MovingAverage<double> ma=JDsp::MovingAverage<double>(10);
-    for(int k=0;k<9;k++)ma.Update(k);
+    for(int k=0;k<9;k++)ma.update(k);
     DOUBLES_EQUAL(3.6,ma.val,0.0000000000001);
 }
 
@@ -249,7 +252,7 @@ TEST(Test_DSP_MovingAverage, ZeroMeanComplex)
     for(int k=0;k<9;k++)
     {
         std::complex<double> z=std::complex<double>(k,-k);
-        ma.Update(z);
+        ma.update(z);
     }
     DOUBLES_EQUAL(8,ma.val.real(),0.0000000000001);
     DOUBLES_EQUAL(-8,ma.val.imag(),0.0000000000001);
@@ -258,14 +261,14 @@ TEST(Test_DSP_MovingAverage, ZeroMeanComplex)
 TEST(Test_DSP_MovingAverage, ZeroMeanInt)
 {
     JDsp::MovingAverage<int> ma=JDsp::MovingAverage<int>(0);
-    for(int k=0;k<9;k++)ma.Update(k);
+    for(int k=0;k<9;k++)ma.update(k);
     LONGS_EQUAL(8,ma.val);
 }
 
 TEST(Test_DSP_MovingAverage, ZeroMeanDouble)
 {
     JDsp::MovingAverage<double> ma=JDsp::MovingAverage<double>(0);
-    for(int k=0;k<9;k++)ma.Update(k);
+    for(int k=0;k<9;k++)ma.update(k);
     DOUBLES_EQUAL(8,ma.val,0.0000000000001);
 }
 
@@ -303,7 +306,7 @@ TEST(Test_DSP_MovingAverage, AssignmentComplex)
     JDsp::MovingAverage<std::complex<double>> ma=JDsp::MovingAverage<std::complex<double>>(1);
     //assignment
     JDsp::MovingAverage<std::complex<double>> ma2=JDsp::MovingAverage<std::complex<double>>(ma);
-    LONGS_EQUAL(1,ma.getSize());
+    LONGS_EQUAL(1,ma2.getSize());
 }
 
 TEST(Test_DSP_MovingAverage, AssignmentInt)
@@ -312,7 +315,7 @@ TEST(Test_DSP_MovingAverage, AssignmentInt)
     JDsp::MovingAverage<double> ma=JDsp::MovingAverage<double>(1);
     //assignment
     JDsp::MovingAverage<double> ma2=JDsp::MovingAverage<double>(ma);
-    LONGS_EQUAL(1,ma.getSize());
+    LONGS_EQUAL(1,ma2.getSize());
 }
 
 TEST(Test_DSP_MovingAverage, AssignmentDouble)
@@ -321,7 +324,7 @@ TEST(Test_DSP_MovingAverage, AssignmentDouble)
     JDsp::MovingAverage<int> ma=JDsp::MovingAverage<int>(1);
     //assignment
     JDsp::MovingAverage<int> ma2=JDsp::MovingAverage<int>(ma);
-    LONGS_EQUAL(1,ma.getSize());
+    LONGS_EQUAL(1,ma2.getSize());
 }
 
 TEST(Test_DSP_MovingAverage, CopyAssignmentComplex)
