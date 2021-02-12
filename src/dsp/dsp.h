@@ -4,6 +4,7 @@
 #include <QVector>
 #include <QDebug>
 #include <complex>
+#include "../util/RuntimeError.h"
 
 namespace JDsp
 {
@@ -75,6 +76,10 @@ public:
     {
         return val[i];
     }
+    inline operator QVector<T>() const
+    {
+        return val;
+    }
 private:
     VectorMovingAverage<T> E1,E2;
     int m=0;
@@ -82,8 +87,89 @@ private:
     double scale=1;
 };
 
+template <class T>
+class VectorMovingMax
+{
+public:
+    VectorMovingMax(){}
+    VectorMovingMax(const QPair<int,int> mn);
+    const QVector<T> &update(const QVector<T> &input);//an input vector of size m
+    void setSize(const QPair<int,int> mn);
+    QPair<int,int> getSize();
+    void flush();
+    //do not change max after init else it wont work hence why const and no direct access
+    inline const QVector<T> &getMax(){return max;}
+    //insertion operator
+    inline QVector<T> &operator<< (const QVector<T> &input)
+    {
+        update(input);
+        return max;
+    }
+    //index operator
+    inline const T &operator[](int i) const
+    {
+        return max[i];
+    }
+//    inline T &operator[](int i)
+//    {
+//        return max[i];
+//    }
+    inline operator QVector<T>() const
+    {
+        return max;
+    }
+protected:
+    inline const QVector<QVector<T>> &getMv(){return mv;}
+private:
+    int m=0;
+    int n=0;
+    int start=0;
+    QVector<T> max;
+    QVector<QVector<T>> mv;
+};
 
+template <class T>
+class VectorMovingMin
+{
+public:
+    VectorMovingMin(){}
+    VectorMovingMin(const QPair<int,int> mn);
+    const QVector<T> &update(const QVector<T> &input);//an input vector of size m
+    void setSize(const QPair<int,int> mn);
+    QPair<int,int> getSize();
+    void flush();
+    //do not change min after init else it wont work hence why const and no direct access
+    inline const QVector<T> &getMin(){return min;}
+    //insertion operator
+    inline QVector<T> &operator<< (const QVector<T> &input)
+    {
+        update(input);
+        return min;
+    }
+    //index operator
+    inline const T &operator[](int i) const
+    {
+        return min[i];
+    }
+//    inline T &operator[](int i)
+//    {
+//        return min[i];
+//    }
+    inline operator QVector<T>() const
+    {
+        return min;
+    }
+protected:
+    inline const QVector<QVector<T>> &getMv(){return mv;}
+private:
+    int m=0;
+    int n=0;
+    int start=0;
+    QVector<T> min;
+    QVector<QVector<T>> mv;
+};
 
+//---not used
 template <class T>
 class MovingAverage
 {
@@ -119,7 +205,7 @@ protected:
 }
 
 //qdebug outputs for variance
-inline QDebug operator<<(QDebug debug, const JDsp::VectorMovingVariance<double> &obj)
+inline QDebug operator<<(QDebug debug, JDsp::VectorMovingVariance<double> &obj)
 {
     return QtPrivate::printSequentialContainer(debug, "Variance", obj.val);
 }
@@ -150,6 +236,26 @@ inline QDebug operator<<(QDebug debug, const JDsp::VectorMovingAverage<std::comp
     QDebugStateSaver saver(debug);
     debug.nospace()<<"Mean qDebug for complex not implimented yet";
     return debug;
+}
+
+//qdebug outputs for min
+inline QDebug operator<<(QDebug debug, JDsp::VectorMovingMin<double> &obj)
+{
+    return QtPrivate::printSequentialContainer(debug, "Min", obj.getMin());
+}
+inline QDebug operator<<(QDebug debug, JDsp::VectorMovingMin<int> &obj)
+{
+    return QtPrivate::printSequentialContainer(debug, "Min", obj.getMin());
+}
+
+//qdebug outputs for max
+inline QDebug operator<<(QDebug debug, JDsp::VectorMovingMax<double> &obj)
+{
+    return QtPrivate::printSequentialContainer(debug, "Max", obj.getMax());
+}
+inline QDebug operator<<(QDebug debug, JDsp::VectorMovingMax<int> &obj)
+{
+    return QtPrivate::printSequentialContainer(debug, "Max", obj.getMax());
 }
 
 

@@ -5,6 +5,132 @@
 namespace JDsp
 {
 
+//----start of VectorMovingMax
+
+//define class for int, double.
+template class VectorMovingMax<int>;
+template class VectorMovingMax<double>;
+
+template <class T>
+VectorMovingMax<T>::VectorMovingMax(const QPair<int,int> mn)
+{
+    setSize(mn);
+}
+template <class T>
+const QVector<T> &VectorMovingMax<T>::update(const QVector<T> &input)//an input vector of size m
+{
+    if(m<1)RUNTIME_ERROR("input vector size needs to be positive", m);
+    if(n<0)RUNTIME_ERROR("window size needs to be non-nedative", n);
+    if(input.size()!=m)RUNTIME_ERROR("input vector size is not the expected size", m);
+    if(n==0)
+    {
+        max=input;
+        return max;
+    }
+
+    for(int k=0;k<m;k++)
+    {
+        if(input[k]>max[k])max[k]=input[k];
+        double outgoing=mv[k][start];
+        mv[k][start]=input[k];
+        start++;start%=n;
+        if(outgoing>=max[k])max[k]=*std::max_element(mv[k].begin(),mv[k].end());
+    }
+
+    return max;
+
+}
+template <class T>
+void VectorMovingMax<T>::setSize(const QPair<int,int> mn)
+{
+    m=mn.first;
+    n=mn.second;
+    if(m<1)RUNTIME_ERROR("input vector size needs to be positive", m);
+    if(n<0)RUNTIME_ERROR("window size needs to be non-nedative", n);
+    mv.resize(m);
+    max.resize(m);
+    for(int k=0;k<mv.size();k++)mv[k].resize(n);
+    //clear
+    flush();
+}
+template <class T>
+QPair<int,int> VectorMovingMax<T>::getSize()
+{
+    return QPair<int,int>(m,n);
+}
+template <class T>
+void VectorMovingMax<T>::flush()
+{
+    max.fill(0);
+    for(int k=0;k<mv.size();k++)mv[k].fill(0);
+    start=1;
+}
+
+//----end of VectorMovingMax
+
+//----start of VectorMovingMin
+
+//define class for int, double.
+template class VectorMovingMin<int>;
+template class VectorMovingMin<double>;
+
+template <class T>
+VectorMovingMin<T>::VectorMovingMin(const QPair<int,int> mn)
+{
+    setSize(mn);
+}
+template <class T>
+const QVector<T> &VectorMovingMin<T>::update(const QVector<T> &input)//an input vector of size m
+{
+    if(m<1)RUNTIME_ERROR("input vector size needs to be positive", m);
+    if(n<0)RUNTIME_ERROR("window size needs to be non-nedative", n);
+    if(input.size()!=m)RUNTIME_ERROR("input vector size is not the expected size", m);
+    if(n==0)
+    {
+        min=input;
+        return min;
+    }
+
+    for(int k=0;k<m;k++)
+    {
+        if(input[k]<min[k])min[k]=input[k];
+        double outgoing=mv[k][start];
+        mv[k][start]=input[k];
+        start++;start%=n;
+        if(outgoing<=min[k])min[k]=*std::min_element(mv[k].begin(),mv[k].end());
+    }
+
+    return min;
+
+}
+template <class T>
+void VectorMovingMin<T>::setSize(const QPair<int,int> mn)
+{
+    m=mn.first;
+    n=mn.second;
+    if(m<1)RUNTIME_ERROR("input vector size needs to be positive", m);
+    if(n<0)RUNTIME_ERROR("window size needs to be non-nedative", n);
+    mv.resize(m);
+    min.resize(m);
+    for(int k=0;k<mv.size();k++)mv[k].resize(n);
+    //clear
+    flush();
+}
+template <class T>
+QPair<int,int> VectorMovingMin<T>::getSize()
+{
+    return QPair<int,int>(m,n);
+}
+template <class T>
+void VectorMovingMin<T>::flush()
+{
+    min.fill(0);
+    for(int k=0;k<mv.size();k++)mv[k].fill(0);
+    start=1;
+}
+
+//----end of VectorMovingMin
+
 //----start of VectorMovingVariance
 
 //define class for int, double and std::complex<double>

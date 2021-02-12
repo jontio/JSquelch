@@ -21,7 +21,9 @@ CI {
     tests/testall.cpp \
     tests/dsp_movingaverage_tests.cpp \
     tests/dsp_vectormovingaverage_tests.cpp \
-    tests/dsp_vectormovingvariance_tests.cpp
+    tests/dsp_vectormovingvariance_tests.cpp \
+    tests/dsp_vectormovingmax_tests.cpp \
+    tests/dsp_vectormovingmin_tests.cpp
   LIBS += -lCppUTest
 
 } else {
@@ -33,7 +35,8 @@ SOURCES += \
     src/jsquelch.cpp \
     src/qled/qled.cpp \
     src/dsp/dsp.cpp \
-    src/util/RuntimeError.cpp \
+    src/util/RuntimeError.cpp
+
 
 HEADERS += \
     src/jsquelch.h \

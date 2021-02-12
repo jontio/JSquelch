@@ -90,6 +90,7 @@ TEST(Test_DSP_VectorMovingVariance, SmallVarianceDouble)
     DOUBLES_EQUAL(10.2667,mv[1],0.0001);
     DOUBLES_EQUAL(11.5667,mv[2],0.0001);
     DOUBLES_EQUAL(13.0667,mv.val[3],0.0001);
+
 }
 
 TEST(Test_DSP_VectorMovingVariance, ZeroZeroVarianceDouble)
