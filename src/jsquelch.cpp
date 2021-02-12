@@ -17,7 +17,6 @@ JSquelch::JSquelch(QWidget *parent)
     JDsp::VectorMovingMin<double> mm(QPair<int,int>(4,5));
     JDsp::VectorMovingMax<double> mM(QPair<int,int>(4,5));
 
-
     QVector<double> x={5,3,6,1};
     qDebug()<<mm<<mM<<mv<<mv.mean();
     for(int k=0;k<10;k++)

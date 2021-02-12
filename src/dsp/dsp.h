@@ -110,10 +110,6 @@ public:
     {
         return max[i];
     }
-//    inline T &operator[](int i)
-//    {
-//        return max[i];
-//    }
     inline operator QVector<T>() const
     {
         return max;
@@ -151,10 +147,6 @@ public:
     {
         return min[i];
     }
-//    inline T &operator[](int i)
-//    {
-//        return min[i];
-//    }
     inline operator QVector<T>() const
     {
         return min;
