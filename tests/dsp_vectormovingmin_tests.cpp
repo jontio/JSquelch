@@ -49,6 +49,13 @@ TEST(Test_DSP_VectorMovingMin, BigTestDouble)
         mv<<input;
     }
 
+    //check output index is as expected
+    int expected_index=std::min_element(mv.getMv()[0].begin(),mv.getMv()[0].end())-mv.getMv()[0].begin();
+    LONGS_EQUAL(expected_index,mv.getMinIndex()[0]);
+    expected_index=std::min_element(mv.getMv()[1].begin(),mv.getMv()[1].end())-mv.getMv()[1].begin();
+    LONGS_EQUAL(expected_index,mv.getMinIndex()[1]);
+
+    //check the values of the elements
     DOUBLES_EQUAL(*std::min_element(mv.getMv()[0].begin(),mv.getMv()[0].end()),mv[0],0.0000000000001);
     DOUBLES_EQUAL(*std::min_element(mv.getMv()[1].begin(),mv.getMv()[1].end()),mv[1],0.0000000000001);
 }

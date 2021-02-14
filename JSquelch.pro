@@ -23,7 +23,11 @@ CI {
     tests/dsp_vectormovingaverage_tests.cpp \
     tests/dsp_vectormovingvariance_tests.cpp \
     tests/dsp_vectormovingmax_tests.cpp \
-    tests/dsp_vectormovingmin_tests.cpp
+    tests/dsp_vectormovingmin_tests.cpp \
+    tests/dsp_hann_tests.cpp \
+    tests/dsp_overlappedrealfft_tests.cpp \
+    tests/dsp_vectormovingminwithassociate_tests.cpp \
+    tests/dsp_movingnoiseestimator_tests.cpp
   LIBS += -lCppUTest
 
 } else {
@@ -32,6 +36,7 @@ CI {
 }
 
 SOURCES += \
+    ../JFFT/jfft.cpp \
     src/jsquelch.cpp \
     src/qled/qled.cpp \
     src/dsp/dsp.cpp \
@@ -39,6 +44,7 @@ SOURCES += \
 
 
 HEADERS += \
+    ../JFFT/jfft.h \
     src/jsquelch.h \
     src/qled/qled.h \
     src/dsp/dsp.h \

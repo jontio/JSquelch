@@ -5,6 +5,125 @@
 namespace JDsp
 {
 
+//----start of MovingNoiseEstimator
+
+
+MovingNoiseEstimator::MovingNoiseEstimator()
+{
+    setSize(257,16,16,62);
+}
+
+MovingNoiseEstimator::MovingNoiseEstimator(int vector_width_m,int moving_stats_window_size,int moving_minimum_window_size,int output_moving_average_window_size)
+{
+    setSize(vector_width_m,moving_stats_window_size,moving_minimum_window_size,output_moving_average_window_size);
+}
+
+QVector<double> &MovingNoiseEstimator::update(const QVector<double> &input)
+{
+    mv<<input;
+    mm.update(mv.mean(),mv);
+    //%calculate normalizing factor over a window
+    //%the bigger this window is the less agile the noise estimateion will be
+    //moving_sigma_estimate=1.062*(sqrt((Zmin_std).^2+(Zmin_mean).^2));
+    //moving_sigma_estimate=movmean(moving_sigma_estimate,62);
+    for(int k=0;k<buffer.size();k++)buffer[k]=sqrt(mm[k]*mm[k]+mm.getAssociate()[k]);
+    VectorMovingAverage<double>::update(buffer);
+    return VectorMovingAverage<double>::val;
+}
+
+void MovingNoiseEstimator::setSize(int vector_width_m,int moving_stats_window_size,int moving_minimum_window_size,int output_moving_average_window_size)
+{
+    mv.setSize(QPair<int,int>(vector_width_m,moving_stats_window_size));
+    mm.setSize(QPair<int,int>(vector_width_m,moving_minimum_window_size));
+    buffer.fill(0,vector_width_m);
+    VectorMovingAverage<double>::setSize(QPair<int,int>(vector_width_m,output_moving_average_window_size));
+}
+
+//----end of MovingNoiseEstimator
+
+//----start of VectorMovingMinWithAssociate
+
+//define class for int, double.
+template class VectorMovingMinWithAssociate<int>;
+template class VectorMovingMinWithAssociate<double>;
+
+template <class T>
+VectorMovingMinWithAssociate<T>::VectorMovingMinWithAssociate(const QPair<int,int> mn)
+{
+    setSize(mn);
+}
+template <class T>
+const QVector<T> &VectorMovingMinWithAssociate<T>::update(const QVector<T> &input, const QVector<T> &associate_input)//an input vector of size m
+{
+    int org_start=VectorMovingMin<T>::getStart();
+    VectorMovingMin<T>::update(input);
+    for(int k=0;k<m;k++)
+    {
+        mv_associate[k][org_start]=associate_input[k];
+        associate[k]=mv_associate[k][VectorMovingMin<T>::getMinIndex()[k]];
+    }
+    return VectorMovingMin<T>::getMin();
+}
+template <class T>
+void VectorMovingMinWithAssociate<T>::setSize(const QPair<int,int> mn)
+{
+    m=mn.first;
+    n=mn.second;
+    mv_associate.resize(m);
+    for(int k=0;k<mv_associate.size();k++)mv_associate[k].resize(n);
+    associate.fill(0,m);
+    VectorMovingMin<T>::setSize(mn);
+}
+
+//----end of VectorMovingMinWithAssociate
+
+
+//----start of OverlappedRealFFT
+
+OverlappedRealFFT::OverlappedRealFFT()
+{
+    setSize(128);
+}
+
+OverlappedRealFFT::OverlappedRealFFT(int size)
+{
+    setSize(size);
+}
+
+void OverlappedRealFFT::setSize(int n)
+{
+    this->n=n;
+    //eg n=128 -> so window is 256, NFFT is 512 and Xabs is 257
+    window=JDsp::Hann(2*n);
+    x.fill(0,4*n);
+    Xfull.fill(0,4*n);
+    Xabs.fill(0,2*n+1);
+    buffer.fill(0,2*n);
+}
+
+void OverlappedRealFFT::update(const QVector<double> &input)
+{
+    if(input.size()!=n)RUNTIME_ERROR("input vector size is not the expected size", n);
+    //shift down and add new buffer
+    for(int k=n;k<(2*n);k++)
+    {
+        buffer[k-n]=buffer[k];
+        buffer[k]=input[k-n];
+    }
+    //hann and pad
+    //xb=sig_test(k:k+256-1).*hann(256)
+    //xb=[xb;zeros(numel(xb),1)]
+    for(int k=0;k<(2*n);k++)x[k]=buffer[k]*window[k];//fill first half and window
+    for(int k=(2*n);k<(4*n);k++)x[k]=0;//zero the rest
+    //fft dont worry about scaling
+    //XB=fft(xb)./scale;
+    fft.fft_real(x,Xfull);
+    //only 257 abs points are needed for reconstitution
+    for(int k=0;k<(2*n+1);k++)Xabs[k]=std::abs(Xfull[k]);
+}
+
+//----end of OverlappedRealFFT
+
 //----start of VectorMovingMax
 
 //define class for int, double.
@@ -30,12 +149,20 @@ const QVector<T> &VectorMovingMax<T>::update(const QVector<T> &input)//an input 
 
     for(int k=0;k<m;k++)
     {
-        if(input[k]>max[k])max[k]=input[k];
+        if(input[k]>max[k])
+        {
+            max[k]=input[k];
+            max_index[k]=start;
+        }
         double outgoing=mv[k][start];
         mv[k][start]=input[k];
-        start++;start%=n;
-        if(outgoing>=max[k])max[k]=*std::max_element(mv[k].begin(),mv[k].end());
+        if(outgoing>=max[k])
+        {
+            max_index[k]=std::max_element(mv[k].begin(),mv[k].end())-mv[k].begin();
+            max[k]=mv[k][max_index[k]];
+        }
     }
+    start++;start%=n;
 
     return max;
 
@@ -49,6 +176,7 @@ void VectorMovingMax<T>::setSize(const QPair<int,int> mn)
     if(n<0)RUNTIME_ERROR("window size needs to be non-nedative", n);
     mv.resize(m);
     max.resize(m);
+    max_index.resize(m);
     for(int k=0;k<mv.size();k++)mv[k].resize(n);
     //clear
     flush();
@@ -62,8 +190,9 @@ template <class T>
 void VectorMovingMax<T>::flush()
 {
     max.fill(0);
+    max_index.fill(0);
     for(int k=0;k<mv.size();k++)mv[k].fill(0);
-    start=1;
+    start=0;
 }
 
 //----end of VectorMovingMax
@@ -93,12 +222,20 @@ const QVector<T> &VectorMovingMin<T>::update(const QVector<T> &input)//an input 
 
     for(int k=0;k<m;k++)
     {
-        if(input[k]<min[k])min[k]=input[k];
+        if(input[k]<min[k])
+        {
+            min[k]=input[k];
+            min_index[k]=start;
+        }
         double outgoing=mv[k][start];
         mv[k][start]=input[k];
-        start++;start%=n;
-        if(outgoing<=min[k])min[k]=*std::min_element(mv[k].begin(),mv[k].end());
+        if(outgoing<=min[k])
+        {
+            min_index[k]=std::min_element(mv[k].begin(),mv[k].end())-mv[k].begin();
+            min[k]=mv[k][min_index[k]];
+        }
     }
+    start++;start%=n;
 
     return min;
 
@@ -112,6 +249,7 @@ void VectorMovingMin<T>::setSize(const QPair<int,int> mn)
     if(n<0)RUNTIME_ERROR("window size needs to be non-nedative", n);
     mv.resize(m);
     min.resize(m);
+    min_index.resize(m);
     for(int k=0;k<mv.size();k++)mv[k].resize(n);
     //clear
     flush();
@@ -125,8 +263,9 @@ template <class T>
 void VectorMovingMin<T>::flush()
 {
     min.fill(0);
+    min_index.fill(0);
     for(int k=0;k<mv.size();k++)mv[k].fill(0);
-    start=1;
+    start=0;
 }
 
 //----end of VectorMovingMin

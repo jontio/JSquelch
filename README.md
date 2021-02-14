@@ -4,23 +4,32 @@
 
 Next step of the voice detection code.
 
-This commit I have added a moving stats library. We now have moving min, max, variance, and mean. These classes accept vectors as their input.
+This commit I have added VectorMovingMinWithAssociate OverlappedRealFFT and MovingNoiseEstimator.
+
+OverlappedRealFFT takes time domain input and outputs frequency domain. It uses overlapping and padding and takes the abs value as described in the web page.
+
+VectorMovingMinWithAssociate finds the min over a window and return that value as well as an associated value, again as described in the web page.
+
+MovingNoiseEstimator is the main class and takes input from the output of the OverlappedRealFFT class and estimates the noise floor. It's used like so...
 
 ```C++
-JDsp::VectorMovingVariance<double> mv(QPair<int,int>(4,5));
-JDsp::VectorMovingMin<double> mm(QPair<int,int>(4,5));
-JDsp::VectorMovingMax<double> mM(QPair<int,int>(4,5));
-
-QVector<double> x={5,3,6,1};
-qDebug()<<mm<<mM<<mv<<mv.mean();
-for(int k=0;k<10;k++)
+QVector<double> x={2,3,1,4};
+JDsp::MovingNoiseEstimator mne(4,3,3,0);
+for(int k=0;k<6;k++)
 {
-    mm<<x;
-    mM<<x;
-    mv<<x;
-    qDebug()<<mm<<mM<<mv<<mv.mean();
-    x[0]+=1;
-    x[1]+=2;
+    mne<<x;//usually x would come from the OverlappedRealFFT output
+    qDebug()<<mne;//the output of MovingNoiseEstimator is the noise estimate
 }
+```
+
+The output of this is...
+
+```
+Noise(0, 0, 0, 0)
+Noise(0, 0, 0, 0)
+Noise(1.33333, 2, 0.666667, 2.66667)
+Noise(1.76383, 2.64575, 0.881917, 3.52767)
+Noise(2, 3, 1, 4)
+Noise(2, 3, 1, 4)
 ```
 

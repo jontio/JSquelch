@@ -4,10 +4,65 @@
 #include <QVector>
 #include <QDebug>
 #include <complex>
+#include "../JFFT/jfft.h"
 #include "../util/RuntimeError.h"
 
 namespace JDsp
 {
+
+template <class T>
+struct JVector : public QVector<T>
+{
+public:
+    JVector(int n) : QVector<T>(n){}
+    JVector(){}
+    JVector(std::initializer_list<T> args) : QVector<T>(args){}
+    JVector(int size, const T &t) : QVector<T>(size,t){}
+    JVector(const QVector<T> &v) : QVector<T>(v){}
+
+    //dot product is handy
+    //if sizes arent the same then it does as much as it can
+    JVector<T> &operator*=(const JVector<T> &other)
+    {
+        int m=qMin(this->size(),other.size());
+        for(int k=0;k<m;k++)
+        {
+            this->operator[](k)*=other[k];
+        }
+        return *this;
+    }
+
+    //addition is handy too but changes QVector operator += witch is appending
+    //if sizes arent the same then it does as much as it can
+    JVector<T> &operator+=(const JVector<T> &other)
+    {
+        int m=qMin(this->size(),other.size());
+        for(int k=0;k<m;k++)
+        {
+            this->operator[](k)+=other[k];
+        }
+        return *this;
+    }
+
+};
+
+class Hann : public QVector<double>
+{
+public:
+    Hann(int n)
+    {
+        fill(0,n);
+        if(n==1)
+        {
+            operator[](0)=1;
+            return;
+        }
+        for(int k=0;k<n;k++)
+        {
+            operator[](k)=0.5*(1.0-cos(2.0*M_PI*((double)(k))/((double)(n-1))));
+        }
+    }
+};
 
 template <class T>
 class VectorMovingAverage
@@ -34,6 +89,10 @@ public:
     inline T &operator[](int i)
     {
         return val[i];
+    }
+    inline operator QVector<T>() const
+    {
+        return val;
     }
 private:
     QVector<QVector<T>> mv;
@@ -99,11 +158,11 @@ public:
     void flush();
     //do not change max after init else it wont work hence why const and no direct access
     inline const QVector<T> &getMax(){return max;}
+    inline const QVector<int> &getMaxIndex(){return max_index;}
     //insertion operator
-    inline QVector<T> &operator<< (const QVector<T> &input)
+    inline const QVector<T> &operator<< (const QVector<T> &input)
     {
-        update(input);
-        return max;
+        return update(input);
     }
     //index operator
     inline const T &operator[](int i) const
@@ -121,6 +180,7 @@ private:
     int n=0;
     int start=0;
     QVector<T> max;
+    QVector<int> max_index;
     QVector<QVector<T>> mv;
 };
 
@@ -136,11 +196,11 @@ public:
     void flush();
     //do not change min after init else it wont work hence why const and no direct access
     inline const QVector<T> &getMin(){return min;}
+    inline const QVector<int> &getMinIndex(){return min_index;}
     //insertion operator
-    inline QVector<T> &operator<< (const QVector<T> &input)
+    inline const QVector<T> &operator<< (const QVector<T> &input)
     {
-        update(input);
-        return min;
+        return update(input);
     }
     //index operator
     inline const T &operator[](int i) const
@@ -153,12 +213,72 @@ public:
     }
 protected:
     inline const QVector<QVector<T>> &getMv(){return mv;}
+    inline const int &getStart(){return start;}
 private:
     int m=0;
     int n=0;
     int start=0;
     QVector<T> min;
+    QVector<int> min_index;
     QVector<QVector<T>> mv;
+};
+
+template <class T>
+class VectorMovingMinWithAssociate : public VectorMovingMin<T>
+{
+public:
+    VectorMovingMinWithAssociate(){}
+    VectorMovingMinWithAssociate(const QPair<int,int> mn);
+    const QVector<T> &update(const QVector<T> &input, const QVector<T> &associate_input);//an input vector of size m
+    void setSize(const QPair<int,int> mn);
+    inline const QVector<T> &getAssociate(){return associate;}
+    //insertion operator
+    inline const QVector<T> &operator<< (const QVector<T> &input)
+    {
+        update(input,QVector<T>(input.size()));
+        return VectorMovingMin<T>::getMin();
+    }
+private:
+    QVector<QVector<T>> mv_associate;
+    QVector<T> associate;
+    int m=0;
+    int n=0;
+};
+
+class OverlappedRealFFT
+{
+public:
+    OverlappedRealFFT();
+    OverlappedRealFFT(int size);
+    void setSize(int n);
+    void update(const QVector<double> &input);
+    QVector<JFFT::cpx_type> Xfull;
+    QVector<double> Xabs;
+private:
+    QVector<double> buffer;
+    QVector<double> x;
+    QVector<double> window;
+    JFFT fft;
+    int n=0;
+};
+
+class MovingNoiseEstimator : public VectorMovingAverage<double>
+{
+public:
+    MovingNoiseEstimator();
+    MovingNoiseEstimator(int vector_width_m,int moving_stats_window_size,int moving_minimum_window_size,int output_moving_average_window_size);
+    QVector<double> &update(const QVector<double> &input);
+    void setSize(int vector_width_m,int moving_stats_window_size,int moving_minimum_window_size,int output_moving_average_window_size);
+    //insertion operator
+    inline QVector<double> &operator<< (const QVector<double> &input)
+    {
+        return update(input);
+    }
+protected:
+    VectorMovingMinWithAssociate<double> mm;
+    VectorMovingVariance<double> mv;
+private:
+    QVector<double> buffer;
 };
 
 //---not used
@@ -250,5 +370,44 @@ inline QDebug operator<<(QDebug debug, JDsp::VectorMovingMax<int> &obj)
     return QtPrivate::printSequentialContainer(debug, "Max", obj.getMax());
 }
 
+//qdebug output for MovingNoiseEstimator
+inline QDebug operator<<(QDebug debug, JDsp::MovingNoiseEstimator &obj)
+{
+    return QtPrivate::printSequentialContainer(debug, "Noise", obj.val);
+}
+
+//dot product for JVector
+template<class T>
+inline JDsp::JVector<T> operator*(JDsp::JVector<T> lhs, const JDsp::JVector<T> &rhs)
+{
+    return lhs *= rhs;
+}
+//addition for JVector. if you use QVector and JVector appending will be done
+template<class T>
+inline JDsp::JVector<T> operator+(JDsp::JVector<T> lhs, const JDsp::JVector<T> &rhs)
+{
+    return lhs += rhs;
+}
+
+//qdebug output for QVector<std::complex<double>>
+inline QDebug operator<<(QDebug debug, const QVector<std::complex<double>> &obj)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace()<<"QVector(";
+    for(int k=0;k<obj.size();k++)
+    {
+        if(k==obj.size()-1)
+        {
+            if(obj[k].imag()>=0)debug.nospace()<<obj[k].real()<<"+"<<obj[k].imag()<<"i)";
+            else debug.nospace()<<obj[k].real()<<obj[k].imag()<<"i)";
+        }
+        else
+        {
+            if(obj[k].imag()>=0)debug.nospace()<<obj[k].real()<<"+"<<obj[k].imag()<<"i, ";
+            else debug.nospace()<<obj[k].real()<<obj[k].imag()<<"i, ";
+        }
+    }
+    return debug;
+}
 
 #endif // DSP_H
