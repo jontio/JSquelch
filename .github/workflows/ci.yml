@@ -19,6 +19,13 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+    
+      # Checks-out JFFT a needed depenancy
+      - name: Checkout FFT repo
+        uses: actions/checkout@v2
+        with:
+          repository: jontio/JFFT
+          path: ../
 
       # Runs a single command using the runners shell
       - name: Setup dependencies
