@@ -31,7 +31,7 @@ TEST(Test_DSP_OverlappedRealFFT, BufferShiftingWindowWithPadding)
 //    Xabs=abs(Xfull(1:numel(Xfull)/2+1))
 
     JDsp::OverlappedRealFFT offt;
-    offt.setSize(4);
+    offt.setInSize(4);
     QVector<double> x={42,64,23,1.2};
     offt.update(x);
     x={1,2,3,4};
@@ -55,14 +55,14 @@ TEST(Test_DSP_OverlappedRealFFT, BufferShiftingWindowWithPadding)
     }
 
     x={1,2,3};
-    offt.setSize(3);
+    offt.setInSize(3);
     offt.update(x);
 
     x={1};
-    offt.setSize(1);
+    offt.setInSize(1);
     offt.update(x);
 
-    offt.setSize(0);
+    offt.setInSize(0);
 }
 
 TEST(Test_DSP_OverlappedRealFFT, SmallRealFFT)

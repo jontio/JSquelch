@@ -82,15 +82,15 @@ void VectorMovingMinWithAssociate<T>::setSize(const QPair<int,int> mn)
 
 OverlappedRealFFT::OverlappedRealFFT()
 {
-    setSize(128);
+    setInSize(128);
 }
 
 OverlappedRealFFT::OverlappedRealFFT(int size)
 {
-    setSize(size);
+    setInSize(size);
 }
 
-void OverlappedRealFFT::setSize(int n)
+void OverlappedRealFFT::setInSize(int n)
 {
     this->n=n;
     //eg n=128 -> so window is 256, NFFT is 512 and Xabs is 257
@@ -101,7 +101,7 @@ void OverlappedRealFFT::setSize(int n)
     buffer.fill(0,2*n);
 }
 
-void OverlappedRealFFT::update(const QVector<double> &input)
+QVector<double> &OverlappedRealFFT::update(const QVector<double> &input)
 {
     if(input.size()!=n)RUNTIME_ERROR("input vector size is not the expected size", n);
     //shift down and add new buffer
@@ -120,6 +120,8 @@ void OverlappedRealFFT::update(const QVector<double> &input)
     fft.fft_real(x,Xfull);
     //only 257 abs points are needed for reconstitution
     for(int k=0;k<(2*n+1);k++)Xabs[k]=std::abs(Xfull[k]);
+
+    return Xabs;
 }
 
 //----end of OverlappedRealFFT

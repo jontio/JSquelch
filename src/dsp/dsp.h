@@ -250,10 +250,17 @@ class OverlappedRealFFT
 public:
     OverlappedRealFFT();
     OverlappedRealFFT(int size);
-    void setSize(int n);
-    void update(const QVector<double> &input);
+    void setInSize(int n);
+    int getInSize(){return n;}
+    int getOutSize(){return (2*n+1);}
+    QVector<double> &update(const QVector<double> &input);
     QVector<JFFT::cpx_type> Xfull;
     QVector<double> Xabs;
+    //insertion operator
+    inline const QVector<double> &operator<< (const QVector<double> &input)
+    {
+        return update(input);
+    }
 private:
     QVector<double> buffer;
     QVector<double> x;
