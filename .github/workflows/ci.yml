@@ -19,6 +19,15 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+          path: main
+    
+      # Checks-out JFFT a needed depenancy
+      - name: Checkout FFT repo
+        uses: actions/checkout@v2
+        with:
+          repository: jontio/JFFT
+          path: JFFT
 
       # Runs a single command using the runners shell
       - name: Setup dependencies
@@ -28,6 +37,7 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run unit tests
         run: |
+          cd main
           qmake CONFIG+=CI
           make
           ./jsquelch -v
@@ -36,6 +46,7 @@ jobs:
       # Build application
       - name: Build application
         run: |
+          cd main
           make clean
           qmake CONFIG-=CI
           make
@@ -47,4 +58,4 @@ jobs:
         with:
           name: build.zip
           path: |
-            jsquelch
+            main/jsquelch
