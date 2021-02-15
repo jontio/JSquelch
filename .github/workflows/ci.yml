@@ -46,6 +46,7 @@ jobs:
       # Build application
       - name: Build application
         run: |
+          cd main
           make clean
           qmake CONFIG-=CI
           make
