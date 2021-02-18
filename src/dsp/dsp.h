@@ -10,6 +10,7 @@
 namespace JDsp
 {
 
+//not used
 template <class T>
 struct JVector : public QVector<T>
 {
@@ -32,6 +33,19 @@ public:
         return *this;
     }
 
+    //dot division is handy
+    //if sizes arent the same then it does as much as it can
+    //will return nan or +-inf if scaled badly
+    JVector<T> &operator/=(const JVector<T> &other)
+    {
+        int m=qMin(this->size(),other.size());
+        for(int k=0;k<m;k++)
+        {
+            this->operator[](k)/=other[k];
+        }
+        return *this;
+    }
+
     //addition is handy too but changes QVector operator += witch is appending
     //if sizes arent the same then it does as much as it can
     JVector<T> &operator+=(const JVector<T> &other)
@@ -43,6 +57,8 @@ public:
         }
         return *this;
     }
+
+//    T division_tolerance=0;
 
 };
 
@@ -62,6 +78,60 @@ public:
             operator[](k)=0.5*(1.0-cos(2.0*M_PI*((double)(k))/((double)(n-1))));
         }
     }
+};
+
+class StrangeSineCorrectionWindow : public QVector<double>
+{
+public:
+    StrangeSineCorrectionWindow(int n)
+    {
+        fill(0,n);
+        double dn=n;
+        for(int k=0;k<n;k++)
+        {
+            operator[](k)=std::abs(std::sin(M_PI*(((double)k)+0.5)/dn)/(1.2729*dn-1.1621))+1.0;
+        }
+    }
+};
+
+//getting really piss of at this point not going to test this
+template <class T>
+class VectorDelayLine : public QVector<T>
+{
+public:
+    VectorDelayLine()
+    {
+        setSize(QPair<int,int>(0,0));
+    }
+    VectorDelayLine(const QPair<int,int> &mn)
+    {
+        setSize(mn);
+    }
+    void setSize(const QPair<int,int> &mn)
+    {
+        m=mn.first;
+        n=mn.second;
+        buffer_index=0;
+        buffer.fill(QVector<T>(m),n);
+    }
+    QVector<T> &update(const QVector<T> &input)
+    {
+        if(input.size()!=m)RUNTIME_ERROR("input vector size is not the expected size", input.size());
+        if(n<=0)
+        {
+            QVector<T>::operator=(input);
+            return *this;
+        }
+        QVector<T>::operator=(buffer[buffer_index]);
+        buffer[buffer_index]=input;
+        buffer_index++;buffer_index%=n;
+        return *this;
+    }
+private:
+    QVector<QVector<T>> buffer;
+    int m=0;
+    int n=0;
+    int buffer_index=0;
 };
 
 template <class T>
@@ -249,7 +319,7 @@ class OverlappedRealFFT
 {
 public:
     OverlappedRealFFT();
-    OverlappedRealFFT(int size);
+    OverlappedRealFFT(int size);//size needs to be a power of two else an error will be thrown when updating
     void setInSize(int n);
     int getInSize(){return n;}
     int getOutSize(){return (2*n+1);}
@@ -257,14 +327,70 @@ public:
     QVector<JFFT::cpx_type> Xfull;
     QVector<double> Xabs;
     //insertion operator
-    inline const QVector<double> &operator<< (const QVector<double> &input)
+    inline OverlappedRealFFT &operator<< (const QVector<double> &input)
     {
-        return update(input);
+        update(input);
+        return *this;
     }
 private:
     QVector<double> buffer;
     QVector<double> x;
     QVector<double> window;
+    JFFT fft;
+    int n=0;
+};
+
+//getting really piss of at this point not going to test this
+class OverlappedRealFFTDelayLine
+{
+    public:
+    OverlappedRealFFTDelayLine()
+    {
+        delay_Xabs.setSize(QPair<int,int>(257,51));
+        delay_Xfull.setSize(QPair<int,int>(512,51));
+    }
+    OverlappedRealFFTDelayLine(const OverlappedRealFFT &fft,int n)
+    {
+        setSize(fft,n);
+    }
+    void setSize(const OverlappedRealFFT &fft,int n)
+    {
+        delay_Xabs.setSize(QPair<int,int>(fft.Xabs.size(),n));
+        delay_Xfull.setSize(QPair<int,int>(fft.Xfull.size(),n));
+    }
+    void delay(OverlappedRealFFT &fft)
+    {
+        fft.Xabs=delay_Xabs.update(fft.Xabs);
+        fft.Xfull=delay_Xfull.update(fft.Xfull);
+    }
+private:
+    VectorDelayLine<double> delay_Xabs;
+    VectorDelayLine<JFFT::cpx_type> delay_Xfull;
+};
+
+class InverseOverlappedRealFFT : public QVector<double>
+{
+public:
+    InverseOverlappedRealFFT();
+    InverseOverlappedRealFFT(int size);//size needs to be a power of two else an error will be thrown when updating
+    void setOutSize(int n);
+    int getInSize(){return (4*n);}
+    int getOutSize(){return n;}
+    QVector<double> &update(const QVector<JFFT::cpx_type> &input);
+    //insertion operators
+    inline InverseOverlappedRealFFT &operator<< (const QVector<JFFT::cpx_type> &input)
+    {
+        update(input);
+        return *this;
+    }
+    inline InverseOverlappedRealFFT &operator<< (const OverlappedRealFFT &input)
+    {
+        update(input.Xfull);
+        return *this;
+    }
+private:
+    QVector<double> window;
+    QVector<double> x,x_part_last;
     JFFT fft;
     int n=0;
 };
@@ -276,10 +402,16 @@ public:
     MovingNoiseEstimator(int vector_width_m,int moving_stats_window_size,int moving_minimum_window_size,int output_moving_average_window_size);
     QVector<double> &update(const QVector<double> &input);
     void setSize(int vector_width_m,int moving_stats_window_size,int moving_minimum_window_size,int output_moving_average_window_size);
-    //insertion operator
-    inline QVector<double> &operator<< (const QVector<double> &input)
+    //insertion operators
+    inline MovingNoiseEstimator &operator<< (const QVector<double> &input)
     {
-        return update(input);
+        update(input);
+        return *this;
+    }
+    inline MovingNoiseEstimator &operator<< (OverlappedRealFFT &input)
+    {
+        update(input.Xabs);
+        return *this;
     }
 protected:
     VectorMovingMinWithAssociate<double> mm;
@@ -288,7 +420,21 @@ private:
     QVector<double> buffer;
 };
 
-//---not used
+class Normalize
+{
+public:
+    Normalize();
+    Normalize(int size);
+    QVector<double> &update(const QVector<double> &input);
+    void setSize(int size);
+    //insertion operator
+protected:
+    VectorMovingMinWithAssociate<double> mm;
+    VectorMovingVariance<double> mv;
+private:
+    QVector<double> buffer;
+};
+
 template <class T>
 class MovingAverage
 {
@@ -319,6 +465,32 @@ protected:
     int MAPtr;
     int PrecisionDilutionCorrectCnt=0;
     double scale=1;
+};
+
+class MovingSignalEstimator : public VectorMovingAverage<double>
+{
+public:
+    MovingSignalEstimator();
+    MovingSignalEstimator(int vector_width_m,int moving_stats_window_size,int min_voice_bin,int max_voice_bin,int output_moving_voice_snr_estimate_window_size,int output_moving_average_window_size);
+    void setSize(int vector_width_m,int moving_stats_window_size,int min_voice_bin,int max_voice_bin,int output_moving_voice_snr_estimate_window_size,int output_moving_average_window_size);
+    QVector<double> &update(const QVector<double> &input);//expects the input to be normalized first
+    //insertion operators
+    inline MovingSignalEstimator &operator<< (const QVector<double> &input)
+    {
+        update(input);
+        return *this;
+    }
+    inline MovingSignalEstimator &operator<< (OverlappedRealFFT &input)
+    {
+        update(input.Xabs);
+        return *this;
+    }
+    double voice_snr_estimate=0;
+private:
+    VectorMovingVariance<double> moving_stats;
+    MovingAverage<double> ma;
+    int start_index=0;
+    int end_index=0;
 };
 
 }
@@ -415,6 +587,84 @@ inline QDebug operator<<(QDebug debug, const QVector<std::complex<double>> &obj)
         }
     }
     return debug;
+}
+
+//dot devision of QVector<T>
+template<class T>
+inline QVector<T> &operator/=(QVector<T> &a, const QVector<T> &b)
+{
+    int m=qMin(a.size(),b.size());
+    for(int k=0;k<m;k++)
+    {
+        a[k]/=b[k];
+    }
+    return a;
+}
+//dot devision for normalization using the noise estimate
+inline QVector<double> &operator/=(QVector<double> &a, const JDsp::MovingNoiseEstimator &b)
+{
+    if(a.size()!=b.val.size())RUNTIME_ERROR("dot devision by noise estimate need to have the same sizes", b.val.size());
+    a/=b.val;
+    return a;
+}
+//dot devision for normalization of everything in OverlappedRealFFT using the noise estimate
+inline JDsp::OverlappedRealFFT &operator/=(JDsp::OverlappedRealFFT &a, const JDsp::MovingNoiseEstimator &b)
+{
+    //divide all the real abs vals
+    //will check for size errors
+    a.Xabs/=b;
+    //divide the first part of complex numbers from dc to nyquist inclusive
+    for(int k=0;k<b.val.size();k++)
+    {
+        a.Xfull[k]/=b.val[k];
+    }
+    //the rest is complex conjugate stuff so dont have to divide
+    auto p=a.Xfull.end();
+    for(int k=1;k<(b.val.size()-1);k++)
+    {
+        p--;
+        *p=std::conj(a.Xfull[k]);
+    }
+    return a;
+}
+
+//dot product of QVector<T>
+template<class T>
+inline QVector<T> &operator*=(QVector<T> &a, const QVector<T> &b)
+{
+    int m=qMin(a.size(),b.size());
+    for(int k=0;k<m;k++)
+    {
+        a[k]*=b[k];
+    }
+    return a;
+}
+//dot product for signal estimation scalling using the signal estimate
+inline QVector<double> &operator*=(QVector<double> &a, const JDsp::MovingSignalEstimator &b)
+{
+    if(a.size()!=b.val.size())RUNTIME_ERROR("dot product by signal estimate need to have the same sizes", b.val.size());
+    a*=b.val;
+    return a;
+}
+//dot product for signal scaling of everything in OverlappedRealFFT using the signal estimate
+inline JDsp::OverlappedRealFFT &operator*=(JDsp::OverlappedRealFFT &a, const JDsp::MovingSignalEstimator &b)
+{
+    //divide all the real abs vals
+    //will check for size errors
+    a.Xabs*=b;
+    //multily the first part of complex numbers from dc to nyquist inclusive
+    for(int k=0;k<b.val.size();k++)
+    {
+        a.Xfull[k]*=b.val[k];
+    }
+    //the rest is complex conjugate stuff so dont have to divide
+    auto p=a.Xfull.end();
+    for(int k=1;k<(b.val.size()-1);k++)
+    {
+        p--;
+        *p=std::conj(a.Xfull[k]);
+    }
+    return a;
 }
 
 #endif // DSP_H

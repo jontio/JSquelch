@@ -7,6 +7,8 @@
 
 TEST_GROUP(Test_DSP_MovingNoiseEstimator)
 {
+    double double_tolerance=0.00001;
+
     //from matlab
     const QVector<double> Z={0.833894,3.223326,0.389431,1.383422,0.555315,1.196348,3.814775,0.044234,2.615933,3.664520,0.815501,1.085864,6.636838,3.163211,1.531994,2.042662,0.673483,3.858356,2.922775,0.496248,0.627097,1.261229,2.835334,2.030545,0.521712,0.451895,0.338598,1.806875,5.031214,0.458211};
     const QVector<double> Zmean={2.028610,1.482217,1.665393,0.776056,1.045028,1.855479,1.685119,2.158314,2.108229,2.365318,1.855295,2.846068,3.628638,3.777348,2.245956,1.416046,2.191500,2.484871,2.425793,1.348707,0.794858,1.574554,2.042370,1.795864,1.001384,0.437402,0.865789,2.392229,2.432100,2.744713};
@@ -41,7 +43,6 @@ TEST(Test_DSP_MovingNoiseEstimator, NoiseEstimateTest)
 {
 
     TestMovingNoiseEstimator mne;
-    double tolerance=0.00001;
     QVector<double> x(1);
     for(int k=0;k<9;k++)
     {
@@ -50,7 +51,7 @@ TEST(Test_DSP_MovingNoiseEstimator, NoiseEstimateTest)
         if(k<6)continue;
 
         //check noise estimate
-        DOUBLES_EQUAL(moving_sigma_estimate[k-3],mne[0],tolerance);
+        DOUBLES_EQUAL(moving_sigma_estimate[k-3],mne[0],double_tolerance);
 
     }
 }
@@ -58,7 +59,6 @@ TEST(Test_DSP_MovingNoiseEstimator, NoiseEstimateTest)
 TEST(Test_DSP_MovingNoiseEstimator, MovingMinAndAssociateTest)
 {
     TestMovingNoiseEstimator mne;
-    double tolerance=0.00001;
     QVector<double> x(1);
     for(int k=0;k<9;k++)
     {
@@ -67,8 +67,8 @@ TEST(Test_DSP_MovingNoiseEstimator, MovingMinAndAssociateTest)
         if(k<6)continue;
 
         //check moving min and associate
-        DOUBLES_EQUAL(Zmin_mean[k-2],mne.getmm()[0],tolerance);
-        DOUBLES_EQUAL(Zmin_std[k-2]*Zmin_std[k-2],mne.getmm().getAssociate()[0],tolerance);
+        DOUBLES_EQUAL(Zmin_mean[k-2],mne.getmm()[0],double_tolerance);
+        DOUBLES_EQUAL(Zmin_std[k-2]*Zmin_std[k-2],mne.getmm().getAssociate()[0],double_tolerance);
 
     }
 }
@@ -76,7 +76,6 @@ TEST(Test_DSP_MovingNoiseEstimator, MovingMinAndAssociateTest)
 TEST(Test_DSP_MovingNoiseEstimator, MovingStatsTest)
 {
     TestMovingNoiseEstimator mne;
-    double tolerance=0.00001;
     QVector<double> x(1);
     for(int k=0;k<9;k++)
     {
@@ -85,8 +84,8 @@ TEST(Test_DSP_MovingNoiseEstimator, MovingStatsTest)
         if(k<6)continue;
 
         //check moving stats
-        DOUBLES_EQUAL(Zmean[k],mne.getmv().mean()[0],tolerance);
-        DOUBLES_EQUAL(Zstd[k]*Zstd[k],mne.getmv()[0],tolerance);
+        DOUBLES_EQUAL(Zmean[k],mne.getmv().mean()[0],double_tolerance);
+        DOUBLES_EQUAL(Zstd[k]*Zstd[k],mne.getmv()[0],double_tolerance);
 
     }
 }

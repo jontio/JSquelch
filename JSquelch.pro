@@ -27,7 +27,19 @@ CI {
     tests/dsp_hann_tests.cpp \
     tests/dsp_overlappedrealfft_tests.cpp \
     tests/dsp_vectormovingminwithassociate_tests.cpp \
-    tests/dsp_movingnoiseestimator_tests.cpp
+    tests/dsp_movingnoiseestimator_tests.cpp \
+    tests/dsp_normalize_tests.cpp \
+    tests/dsp_movingsignalestimator_tests.cpp \
+    tests/test_snr_estimation_input_257_by_100.cpp \
+    tests/test_snr_estimation_output_db_1_by_100.cpp \
+    tests/test_snr_estimation_output_lin_snrs_257_by_100.cpp \
+    tests/dsp_inverseoverlappedrealfft_tests.cpp \
+    tests/dsp_dotproductscalling_tests.cpp
+HEADERS += \
+    tests/test_snr_estimation_input_257_by_100.h \
+    tests/test_snr_estimation_output_db_1_by_100.h \
+    tests/test_snr_estimation_output_lin_snrs_257_by_100.h
+
   LIBS += -lCppUTest
 
 } else {
@@ -40,15 +52,17 @@ SOURCES += \
     src/jsquelch.cpp \
     src/qled/qled.cpp \
     src/dsp/dsp.cpp \
-    src/util/RuntimeError.cpp
-
-
+    src/util/RuntimeError.cpp \
+    src/util/file_utils.cpp \
+    src/util/stdio_utils.cpp
 HEADERS += \
     ../JFFT/jfft.h \
     src/jsquelch.h \
     src/qled/qled.h \
     src/dsp/dsp.h \
-    src/util/RuntimeError.h
+    src/util/RuntimeError.h \
+    src/util/file_utils.h \
+    src/util/stdio_utils.h
 
 FORMS += \
     src/jsquelch.ui

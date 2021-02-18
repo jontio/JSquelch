@@ -54,9 +54,19 @@ TEST(Test_DSP_OverlappedRealFFT, BufferShiftingWindowWithPadding)
         DOUBLES_EQUAL(expected_abs[k],offt.Xabs[k],0.0001);
     }
 
-    x={1,2,3};
-    offt.setInSize(3);
-    offt.update(x);
+    //not a power of 2 will fail so test
+    bool caught_runtime_error=false;
+    try
+    {
+        x={1,2,3};
+        offt.setInSize(3);
+        offt.update(x);
+    }
+    catch (const RuntimeError&)
+    {
+        caught_runtime_error=true;
+    }
+    CHECK_TEXT(caught_runtime_error,"JDsp::OverlappedRealFFT Failed to throw an error when not using a power of 2");
 
     x={1};
     offt.setInSize(1);

@@ -2,11 +2,11 @@
 #include <iostream>
 #include <sstream>
 
-RuntimeError::RuntimeError(const std::string &arg, const char *file, int line) :
+RuntimeError::RuntimeError(const std::string &arg, const char *file, int line,int parameter) :
     std::runtime_error(arg)
 {
         std::ostringstream o;
-        o << file << ":" << line << ": " << arg;
+        o << file << ":" << line << ": " << arg<<" ("<<parameter<<")";
         msg = o.str();
 }
 

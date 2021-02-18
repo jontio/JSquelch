@@ -5,8 +5,94 @@
 namespace JDsp
 {
 
-//----start of MovingNoiseEstimator
+//----start of InverseOverlappedRealFFT
 
+InverseOverlappedRealFFT::InverseOverlappedRealFFT()
+{
+    setOutSize(128);
+}
+InverseOverlappedRealFFT::InverseOverlappedRealFFT(int size)//size needs to be a power of two else an error will be thrown when updating
+{
+    setOutSize(size);
+}
+void InverseOverlappedRealFFT::setOutSize(int n)
+{
+    this->n=n;
+    //eg n=128 -> NFFT is 512 (input size), Xabs from fft is 257, window from fft is 256, outsize is 128
+    x.fill(0,4*n);
+    QVector<double>::fill(0,n);
+    x_part_last.fill(0,n);
+    window=JDsp::StrangeSineCorrectionWindow(n);
+}
+QVector<double> &InverseOverlappedRealFFT::update(const QVector<JFFT::cpx_type> &input)
+{
+    //do ifft
+    if((n==0)||((n&(n-1))!=0))RUNTIME_ERROR("ifft size needs to be a power of 2", n);
+    if(input.size()!=4*n)RUNTIME_ERROR("input vector size is not the expected size", n);
+    fft.ifft_real(const_cast<QVector<JFFT::cpx_type>&>(input),x);//um yup not so good
+    //this should not happen if sizes are ok before calling fft
+    if(input.size()!=4*n)RUNTIME_ERROR("ifft changed input size", input.size());
+    if(x.size()!=4*n)RUNTIME_ERROR("ifft changed output size", x.size());
+
+    //overlap and add
+    QVector<double>::operator=(x.mid(0,n));//oldest part of this block
+    if(x_part_last.size()!=n)RUNTIME_ERROR("x_part_last wrong size", x_part_last.size());
+    for(int k=0;k<n;k++)QVector<double>::operator[](k)+=x_part_last[k];//overlap last with this
+    x_part_last=x.mid(n,n);//newest part of this block for next time
+
+    //this inverse isn't exact and has a bit of a bump every n samples.
+    //it's about 0.6% at n=128 samples. it gets worse for small n and better for large n
+    //the bump is about abs(sin(pi*(x-0.5)/128)/161.8)+1.0 in matlab indexing for 128
+    //generally it's about abs(sin(pi*(x-0.5)/n)/(1.2729*n-1.1621))+1.0 but this approximation
+    //gets worse for small n and it's a bit flat between bumps.
+    //allthough not large for n=128 this window operation below will reduce these bumps
+    for(int k=0;k<n;k++)QVector<double>::operator[](k)*=window[k];
+    //for n=128 the error is improved by about 2 orders of manitude
+    //when using the windowing reducing the error to 0.004%
+
+    return *this;
+}
+
+//----end of InverseOverlappedRealFFT
+
+//----start of MovingSignalEstimator
+
+MovingSignalEstimator::MovingSignalEstimator()
+{
+    setSize(257,8,3,96,62,8);
+}
+MovingSignalEstimator::MovingSignalEstimator(int vector_width_m,int moving_stats_window_size,int min_voice_bin,int max_voice_bin,int output_moving_voice_snr_estimate_window_size,int output_moving_average_window_size)
+{
+    setSize(vector_width_m,moving_stats_window_size,min_voice_bin,max_voice_bin,output_moving_voice_snr_estimate_window_size,output_moving_average_window_size);
+}
+void MovingSignalEstimator::setSize(int vector_width_m,int moving_stats_window_size,int min_voice_bin,int max_voice_bin,int output_moving_voice_snr_estimate_window_size,int output_moving_average_window_size)
+{
+    moving_stats.setSize(QPair<int,int>(vector_width_m,moving_stats_window_size));
+    ma.setSize(output_moving_voice_snr_estimate_window_size);
+    VectorMovingAverage<double>::setSize(QPair<int,int>(vector_width_m,output_moving_average_window_size));
+    voice_snr_estimate=0;
+    start_index=min_voice_bin;
+    end_index=max_voice_bin;
+    if((start_index>=vector_width_m)||(start_index<0))RUNTIME_ERROR("start_index out of bounds", start_index);
+    if((end_index>=vector_width_m)||(end_index<0))RUNTIME_ERROR("end_index out of bounds", end_index);
+    if(end_index<start_index)RUNTIME_ERROR("end_index is less than start_index", end_index);
+}
+QVector<double> &MovingSignalEstimator::update(const QVector<double> &input)//expects the input to be normalized first
+{
+    moving_stats.update(input);
+    const VectorMovingAverage<double> &mean=moving_stats.mean();
+    for(int k=0;k<moving_stats.val.size();k++)
+    {
+        moving_stats.val[k]=mean[k]*mean[k]+moving_stats.val[k]-1.0;
+    }
+    voice_snr_estimate=*std::max_element(moving_stats.val.begin()+start_index,moving_stats.val.begin()+end_index);
+    voice_snr_estimate=ma.update(voice_snr_estimate);
+    return VectorMovingAverage<double>::update(moving_stats.val);
+}
+
+//----end of MovingSignalEstimator
+
+//----start of MovingNoiseEstimator
 
 MovingNoiseEstimator::MovingNoiseEstimator()
 {
@@ -20,6 +106,7 @@ MovingNoiseEstimator::MovingNoiseEstimator(int vector_width_m,int moving_stats_w
 
 QVector<double> &MovingNoiseEstimator::update(const QVector<double> &input)
 {
+    if(input.size()!=val.size())RUNTIME_ERROR("input vector size is not the expected size", input.size());
     mv<<input;
     mm.update(mv.mean(),mv);
     //%calculate normalizing factor over a window
@@ -92,6 +179,7 @@ OverlappedRealFFT::OverlappedRealFFT(int size)
 
 void OverlappedRealFFT::setInSize(int n)
 {
+
     this->n=n;
     //eg n=128 -> so window is 256, NFFT is 512 and Xabs is 257
     window=JDsp::Hann(2*n);
@@ -103,6 +191,7 @@ void OverlappedRealFFT::setInSize(int n)
 
 QVector<double> &OverlappedRealFFT::update(const QVector<double> &input)
 {
+    if((n==0)||((n&(n-1))!=0))RUNTIME_ERROR("fft size needs to be a power of 2", n);
     if(input.size()!=n)RUNTIME_ERROR("input vector size is not the expected size", n);
     //shift down and add new buffer
     for(int k=n;k<(2*n);k++)
@@ -118,6 +207,9 @@ QVector<double> &OverlappedRealFFT::update(const QVector<double> &input)
     //fft dont worry about scaling
     //XB=fft(xb)./scale;
     fft.fft_real(x,Xfull);
+    //this should not happen if sizes are ok before calling fft
+    if(x.size()!=4*n)RUNTIME_ERROR("fft changed input size", x.size());
+    if(Xfull.size()!=4*n)RUNTIME_ERROR("fft changed output size", Xfull.size());
     //only 257 abs points are needed for reconstitution
     for(int k=0;k<(2*n+1);k++)Xabs[k]=std::abs(Xfull[k]);
 
