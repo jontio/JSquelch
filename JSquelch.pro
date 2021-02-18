@@ -34,7 +34,8 @@ CI {
     tests/test_snr_estimation_output_db_1_by_100.cpp \
     tests/test_snr_estimation_output_lin_snrs_257_by_100.cpp \
     tests/dsp_inverseoverlappedrealfft_tests.cpp \
-    tests/dsp_dotproductscalling_tests.cpp
+    tests/dsp_dotproductscalling_tests.cpp \
+    tests/matlab_compare_tests.cpp
 HEADERS += \
     tests/test_snr_estimation_input_257_by_100.h \
     tests/test_snr_estimation_output_db_1_by_100.h \
@@ -66,6 +67,8 @@ HEADERS += \
 
 FORMS += \
     src/jsquelch.ui
+
+DEFINES+= MATLAB_PATH=\\\"$${PWD}/matlab/\\\"
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

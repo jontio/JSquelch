@@ -28,7 +28,8 @@ JSquelch::JSquelch(QWidget *parent)
 
 //    qDebug()<<"a=[];b=[];";
 
-    QFile file("/home/jontio/ds/3TBusb/linux_downloads/ai_hiss/test_signal_time.raw");
+
+    QFile file(QString(MATLAB_PATH)+"/test_signal_time.raw");
     if(!file.open(QIODevice::ReadOnly))return;
     QDataStream datastream(&file);
     datastream.setByteOrder(QDataStream::LittleEndian);
@@ -144,9 +145,9 @@ ymne+=mne.val;
 
         y+=10.0*log10(mse.voice_snr_estimate);
 
-        if(10.0*log10(mse.voice_snr_estimate)>5.0)y_sound+=ifft;
+//        if(10.0*log10(mse.voice_snr_estimate)>5.0)y_sound+=ifft;
 
-
+y_sound+=ifft;
 
 
 
@@ -158,6 +159,14 @@ ymne+=mne.val;
     std::cout << "Elapsed Time: " << elapsed.count() << " ms" << std::endl;
 
     file.close();
+
+
+
+    File_Utils::Matlab::print((QString(MATLAB_PATH)+"/actual_snr_estimate_db_signal_include.m").toLocal8Bit().data(),"actual_snr_estimate_db_signal",y);
+    File_Utils::Matlab::print((QString(MATLAB_PATH)+"/actual_output_signal_include.m").toLocal8Bit().data(),"actual_output_signal",y_sound);
+
+    return;
+
     File_Utils::Matlab::print("/home/jontio/ds/3TBusb/linux_downloads/ai_hiss/yq_include.m","yq",y);
     File_Utils::Matlab::print("/home/jontio/ds/3TBusb/linux_downloads/ai_hiss/y_sound_include.m","y_sound",y_sound);
 
