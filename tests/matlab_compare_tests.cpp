@@ -80,8 +80,10 @@ TEST(Test_MatlabCompare, SignalOutputTest)
     }
     file.close();
 
+#ifdef GENERATE_FILES_FOR_MATLAB
     //save actual output signal to disk in the matlab folder for use in matlab
     File_Utils::Matlab::print((QString(MATLAB_PATH)+"/actual_output_signal_include.m").toLocal8Bit().data(),"actual_output_signal",actual_output_signal);
+#endif
 
     //load expected_snr_estimate_db_signal file
     file.setFileName(QString(MATLAB_PATH)+"/expected_output_signal.raw");
@@ -151,8 +153,10 @@ TEST(Test_MatlabCompare, SNRTest)
     }
     file.close();
 
+#ifdef GENERATE_FILES_FOR_MATLAB
     //save actual snr estimate db signal to disk in the matlab folder for use in matlab
     File_Utils::Matlab::print((QString(MATLAB_PATH)+"/actual_snr_estimate_db_signal_include.m").toLocal8Bit().data(),"actual_snr_estimate_db_signal",actual_snr_estimate_db_signal);
+#endif
 
     //load expected_snr_estimate_db_signal file
     file.setFileName(QString(MATLAB_PATH)+"/expected_snr_estimate_db_signal.raw");

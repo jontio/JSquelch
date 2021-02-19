@@ -17,6 +17,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 CI {
+# GENERATE_FILES_FOR_MATLAB will create files in the matlab folder
+# Only needed if you want to export things to matlab for tesing there
+#  DEFINES += GENERATE_FILES_FOR_MATLAB
   SOURCES += \
     tests/testall.cpp \
     tests/dsp_movingaverage_tests.cpp \
