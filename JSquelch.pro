@@ -19,7 +19,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CI {
 # GENERATE_FILES_FOR_MATLAB will create files in the matlab folder
 # Only needed if you want to export things to matlab for tesing there
-#  DEFINES += GENERATE_FILES_FOR_MATLAB
+  DEFINES += GENERATE_FILES_FOR_MATLAB
   SOURCES += \
     tests/testall.cpp \
     tests/dsp_movingaverage_tests.cpp \
@@ -38,7 +38,10 @@ CI {
     tests/test_snr_estimation_output_lin_snrs_257_by_100.cpp \
     tests/dsp_inverseoverlappedrealfft_tests.cpp \
     tests/dsp_dotproductscalling_tests.cpp \
-    tests/matlab_compare_tests.cpp
+    tests/matlab_compare_tests.cpp \
+    tests/dsp_movingmax_tests.cpp \
+    tests/dsp_scalardelayline_tests.cpp \
+    tests/dsp_inverseoverlappedrealfftdelayline_tests.cpp
 HEADERS += \
     tests/test_snr_estimation_input_257_by_100.h \
     tests/test_snr_estimation_output_db_1_by_100.h \

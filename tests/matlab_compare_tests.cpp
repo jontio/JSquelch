@@ -4,14 +4,13 @@
 #include "../src/util/file_utils.h"
 #include <QFile>
 #include <QDataStream>
+#include <iostream>
 
 //important for Qt include cpputest last as it mucks up new and causes compiling to fail
 #include "CppUTest/TestHarness.h"
 
-
 //this unit test is the big one and tests the C++ algo implimentation with
 //that of matlab. the output signal and snr are compared
-
 
 TEST_GROUP(Test_MatlabCompare)
 {
@@ -127,6 +126,9 @@ TEST(Test_MatlabCompare, SNRTest)
     //what we want from the algo output
     QVector<double> actual_snr_estimate_db_signal;
 
+    //see how fast this is
+    auto start = std::chrono::high_resolution_clock::now();
+
     //run algo over file
     while(!file.atEnd())
     {
@@ -152,6 +154,13 @@ TEST(Test_MatlabCompare, SNRTest)
         actual_snr_estimate_db_signal+=10.0*log10(mse.voice_snr_estimate);
     }
     file.close();
+
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = finish - start;
+    double fps=((double)(fft.getInSize()*actual_snr_estimate_db_signal.size()))/(elapsed.count()/1000.0);
+    const double Fs=8000;
+    double cpu_load=Fs/fps;
+    std::cout << std::endl << std::endl <<"Up to snr estimate part of algo: cpu_load="<<cpu_load*100.0<<"% at "<<Fs<<"Hz sample rate. fps="<<fps<< std::endl;
 
 #ifdef GENERATE_FILES_FOR_MATLAB
     //save actual snr estimate db signal to disk in the matlab folder for use in matlab

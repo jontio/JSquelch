@@ -89,6 +89,25 @@ TEST(Test_DSP_VectorMovingMin, ResetOnChangeSizeDouble)
     DOUBLES_EQUAL(0,mv[3],0.0000000000001);
 }
 
+TEST(Test_DSP_VectorMovingMin, SmallMinWithNanDouble)
+{
+    JDsp::VectorMovingMin<double> mv=JDsp::VectorMovingMin<double>(QPair<int,int>(4,3));
+    QVector<double> input={1,2,3,4};
+    for(int k=0;k<3;k++)mv<<input;
+    input[0]=std::numeric_limits<double>::quiet_NaN();
+    for(int k=0;k<4;k++)
+    {
+        mv<<input;
+        for(int i=1;i<4;i++)input[i]+=1;
+        if(k==2)input[0]=2;
+    }
+
+    DOUBLES_EQUAL(1,mv[0],0.0001);
+    DOUBLES_EQUAL(3,mv[1],0.0001);
+    DOUBLES_EQUAL(4,mv[2],0.0001);
+    DOUBLES_EQUAL(5,mv.getMin()[3],0.0001);
+}
+
 TEST(Test_DSP_VectorMovingMin, SmallMinDouble)
 {
     JDsp::VectorMovingMin<double> mv=JDsp::VectorMovingMin<double>(QPair<int,int>(4,3));

@@ -5,6 +5,93 @@
 namespace JDsp
 {
 
+//----start of MovingMax
+
+//define class for int, double.
+template class MovingMax<int>;
+template class MovingMax<double>;
+
+template <class T>
+MovingMax<T>::MovingMax(int n)
+{
+    setSize(n);
+}
+template <class T>
+const T &MovingMax<T>::update(const QVector<T> &input)
+{
+    //find max non nan value input
+    auto it= std::max_element(input.begin(),input.end(),[](T x, T y)
+    {
+            return ((x < y) ? true : std::isnan(x));
+    });
+    T max_in_vector  = *it;
+//        int max_index = std::distance(input.begin(), it);
+//        qDebug()<<"max_index="<<max_index;
+//        qDebug()<<"max_in_vector="<<max_in_vector;
+    //update window
+    if(std::isnan(max_in_vector)) return max;
+    if(n==0)
+    {
+        max=max_in_vector;
+        return max;
+    }
+    if(max_in_vector>max)
+    {
+        max=max_in_vector;
+    }
+    double outgoing=mv[start];
+    mv[start]=max_in_vector;
+    if(outgoing>=max)
+    {
+        max=*std::max_element(mv.begin(),mv.end());
+    }
+    start++;start%=n;
+    return max;
+}
+template <class T>
+const T &MovingMax<T>::update(const T &input)
+{
+    if(std::isnan(input))return max;
+    if(n==0)
+    {
+        max=input;
+        return max;
+    }
+    if(input>max)
+    {
+        max=input;
+    }
+    double outgoing=mv[start];
+    mv[start]=input;
+    if(outgoing>=max)
+    {
+        max=*std::max_element(mv.begin(),mv.end());
+    }
+    start++;start%=n;
+    return max;
+}
+template <class T>
+void MovingMax<T>::setSize(int n)
+{
+    this->n=n;
+    if(n<0)RUNTIME_ERROR("window size needs to be non-negative", n);
+    flush();
+}
+template <class T>
+int MovingMax<T>::getSize()
+{
+    return n;
+}
+template <class T>
+void MovingMax<T>::flush()
+{
+    mv.fill(0,n);
+    start=0;
+    max=0;
+}
+
+//----end of MovingMax
+
 //----start of InverseOverlappedRealFFT
 
 InverseOverlappedRealFFT::InverseOverlappedRealFFT()
@@ -98,12 +185,10 @@ MovingNoiseEstimator::MovingNoiseEstimator()
 {
     setSize(257,16,16,62);
 }
-
 MovingNoiseEstimator::MovingNoiseEstimator(int vector_width_m,int moving_stats_window_size,int moving_minimum_window_size,int output_moving_average_window_size)
 {
     setSize(vector_width_m,moving_stats_window_size,moving_minimum_window_size,output_moving_average_window_size);
 }
-
 QVector<double> &MovingNoiseEstimator::update(const QVector<double> &input)
 {
     if(input.size()!=val.size())RUNTIME_ERROR("input vector size is not the expected size", input.size());
@@ -117,7 +202,6 @@ QVector<double> &MovingNoiseEstimator::update(const QVector<double> &input)
     VectorMovingAverage<double>::update(buffer);
     return VectorMovingAverage<double>::val;
 }
-
 void MovingNoiseEstimator::setSize(int vector_width_m,int moving_stats_window_size,int moving_minimum_window_size,int output_moving_average_window_size)
 {
     mv.setSize(QPair<int,int>(vector_width_m,moving_stats_window_size));
@@ -171,12 +255,10 @@ OverlappedRealFFT::OverlappedRealFFT()
 {
     setInSize(128);
 }
-
 OverlappedRealFFT::OverlappedRealFFT(int size)
 {
     setInSize(size);
 }
-
 void OverlappedRealFFT::setInSize(int n)
 {
 
@@ -188,7 +270,6 @@ void OverlappedRealFFT::setInSize(int n)
     Xabs.fill(0,2*n+1);
     buffer.fill(0,2*n);
 }
-
 QVector<double> &OverlappedRealFFT::update(const QVector<double> &input)
 {
     if((n==0)||((n&(n-1))!=0))RUNTIME_ERROR("fft size needs to be a power of 2", n);
@@ -243,6 +324,7 @@ const QVector<T> &VectorMovingMax<T>::update(const QVector<T> &input)//an input 
 
     for(int k=0;k<m;k++)
     {
+        if(isnan(input[k]))continue;
         if(input[k]>max[k])
         {
             max[k]=input[k];
@@ -316,6 +398,7 @@ const QVector<T> &VectorMovingMin<T>::update(const QVector<T> &input)//an input 
 
     for(int k=0;k<m;k++)
     {
+        if(isnan(input[k]))continue;
         if(input[k]<min[k])
         {
             min[k]=input[k];

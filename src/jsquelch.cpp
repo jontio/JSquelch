@@ -17,167 +17,104 @@ JSquelch::JSquelch(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //algo things
+    //these settings have to match exactly with the create.m Matlab script
     JDsp::OverlappedRealFFT fft(128);
     JDsp::MovingNoiseEstimator mne(fft.getOutSize(),16,16,62);
     JDsp::MovingSignalEstimator mse(fft.getOutSize(),8,3,96,62,8);
     JDsp::InverseOverlappedRealFFT ifft(fft.getInSize());
+    JDsp::OverlappedRealFFTDelayLine fft_delay1(fft,51);
+    JDsp::OverlappedRealFFTDelayLine fft_delay2(fft,6);
+    QVector<double> x(fft.getInSize());
 
-    //normally distributed numbers for the signal
-    std::default_random_engine generator(1);
-    std::normal_distribution<double> distribution(0.0,1.0);
+    //for alignment of output signal
+    double movmax_delay_in_frames=8000*1;
+    JDsp::MovingMax<double> movmax(movmax_delay_in_frames/ifft.getOutSize());
+    JDsp::InverseOverlappedRealFFTDelayLine delayline(movmax_delay_in_frames/2.0);//this should be half of movave
+    JDsp::ScalarDelayLine<double> delayline2(movmax_delay_in_frames/(128*2)-31);//not sure how this changes for mne and mse
 
-//    qDebug()<<"a=[];b=[];";
+    double last_snr=0;
 
-
+    //load test file
     QFile file(QString(MATLAB_PATH)+"/test_signal_time.raw");
-    if(!file.open(QIODevice::ReadOnly))return;
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        RUNTIME_ERROR("failed to open file",1);
+    }
     QDataStream datastream(&file);
     datastream.setByteOrder(QDataStream::LittleEndian);
     datastream.setFloatingPointPrecision (QDataStream::SinglePrecision);
-    QVector<double> x(fft.getInSize());
-    QVector<double> y;
-    QVector<double> y_sound;
-    QVector<double> yabs;
-    QVector<double> ymne;
-    QVector<double> ymse;
 
-    JDsp::VectorDelayLine<double> vdl;
-    JDsp::VectorDelayLine<JFFT::cpx_type> vcomplexdl;
-//    vdl.setSize(QPair<int,int>(257,51));
-//    vcomplexdl.setSize(QPair<int,int>(512,51));
+    //what we want from the algo output
+    QVector<double> actual_snr_estimate_db_signal;
+    QVector<double> actual_output_signal;
 
-    JDsp::OverlappedRealFFTDelayLine fft_delay1(fft,51);
-    JDsp::OverlappedRealFFTDelayLine fft_delay2(fft,6);
-
-//    x={1,-6};
-//    qDebug()<<(vdl.update(x));
-//    x={2,8};
-//    qDebug()<<(vdl.update(x));
-//    x={3,2};
-//    qDebug()<<(vdl.update(x));
-//    x={4,0.5};
-//    qDebug()<<(vdl.update(x));
-//    x={0,0};
-//    qDebug()<<vdl.update(x);
-//    x={0,0};
-//    qDebug()<<vdl.update(x);
-//    x={0,0};
-//    qDebug()<<vdl.update(x);
-
-//    return;
-
-
+    //see how fast this is
     auto start = std::chrono::high_resolution_clock::now();
 
-    for(int k=0;k<40000;k++)//400;k++)
+    //run algo over file
+    while(!file.atEnd())
     {
+        //read some audio
         for(int i=0;i<x.size();i++)
         {
-//            x[i]=distribution(generator);
-            if(!file.atEnd())
-            {
-                datastream>>x[i];
-            }
-            else
-            {
-                break;
-                x[i]=distribution(generator);
-            }
-
-
-
+            if(file.atEnd())break;
+            datastream>>x[i];
         }
         if(file.atEnd())break;
 
-
-//        qDebug()<<x;
-//        return;
-
-//        Stdio_Utils::Matlab::print("a(end+1:end+128)",x);
-
+        //do main algo
         fft<<x;//signal in
-//        ifft<<fft;
-
-//        ifft
-
-
-
-
-//        qDebug()<<ifft.update(fft.Xfull);
-
-//        ifft.update(fft.Xfull);
-
-//        qDebug()<<fft.Xfull.size()<<ifft.update(fft.Xfull).size();
-
-//        Stdio_Utils::Matlab::print("b(end+1:end+128)",ifft);
-
-
-//        fft.Xabs[20]=100;//artificial tone
         mne<<fft;//output of fft to input of mne
-
-
-//fft.Xabs=vdl.update(fft.Xabs);
-//fft.Xfull=vcomplexdl.update(fft.Xfull);
-
-fft_delay1.delay(fft);
-
-ymne+=mne.val;
-//yabs+=fft.Xabs;
-
-
+        fft_delay1.delay(fft);//1st delayline to match matlab
         fft/=mne;//normalize output of fft
-
-        yabs+=fft.Xabs;
-
-//        fft.Xabs[0]=0;//no need for dc
-//        fft.Xabs[256]=0;//no need for nyquest
         mse<<fft;//output of fft into mse
-
-
-        ymse+=mse;
-
-        fft_delay2.delay(fft);
-
+        fft_delay2.delay(fft);//2nd delayline to match matlab
         fft*=mse;//scale fft output by signal estimate
+
+        //now reconstruct a signal and get volume and adjust timing etc
         ifft<<fft;//output of fft to inverse fft to produce reconstuted signal
+        movmax<<ifft;//update moving max with time domain output signal
+        delayline.delay(ifft);//delay the output by half the moving window length so we are looking forward and back in time.
+        ifft/=(1.25*movmax);//normalize the time domain output signal
 
-//        if((k+1)%64)continue;
+        mse.voice_snr_estimate=delayline2.update(mse.voice_snr_estimate);//delay snr as audio is delayed
+        if(isnan(mse.voice_snr_estimate))
+        {
+//            continue;//some snr estimates may be nan. if so then needs to be ignored
+            mse.voice_snr_estimate=last_snr;
+        }
+        double snr_db=10.0*log10(mse.voice_snr_estimate);
 
-        y+=10.0*log10(mse.voice_snr_estimate);
+        last_snr=mse.voice_snr_estimate;
 
-//        if(10.0*log10(mse.voice_snr_estimate)>5.0)y_sound+=ifft;
+        //keep snr db
+        actual_snr_estimate_db_signal+=snr_db;
 
-y_sound+=ifft;
+        //keep output signal when snr_db is good
+        if(snr_db<5.0) continue;
+        actual_output_signal+=ifft;
 
-
-
-//        qDebug()<<10.0*log10(mse.voice_snr_estimate);//mse.voice_snr_estimate;
     }
+    file.close();
 
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = finish - start;
-    std::cout << "Elapsed Time: " << elapsed.count() << " ms" << std::endl;
+    double fps=((double)(fft.getInSize()*actual_snr_estimate_db_signal.size()))/(elapsed.count()/1000.0);
+    const double Fs=8000;
+    double cpu_load=Fs/fps;
+    std::cout <<"cpu_load="<<cpu_load*100.0<<"% at "<<Fs<<"Hz sample rate"<< std::endl;
 
+    file.setFileName(QString(MATLAB_PATH)+"/delme.raw");
+    if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate))
+    {
+        RUNTIME_ERROR("failed to open file for writing",1);
+    }
+    for(int k=0;k<actual_output_signal.size();k++)
+    {
+        datastream<<actual_output_signal[k];
+    }
     file.close();
-
-
-
-    File_Utils::Matlab::print((QString(MATLAB_PATH)+"/actual_snr_estimate_db_signal_include.m").toLocal8Bit().data(),"actual_snr_estimate_db_signal",y);
-    File_Utils::Matlab::print((QString(MATLAB_PATH)+"/actual_output_signal_include.m").toLocal8Bit().data(),"actual_output_signal",y_sound);
-
-    return;
-
-    File_Utils::Matlab::print("/home/jontio/ds/3TBusb/linux_downloads/ai_hiss/yq_include.m","yq",y);
-    File_Utils::Matlab::print("/home/jontio/ds/3TBusb/linux_downloads/ai_hiss/y_sound_include.m","y_sound",y_sound);
-
-
-    File_Utils::Matlab::print("/home/jontio/ds/3TBusb/linux_downloads/ai_hiss/yabs_include.m","yabs",yabs);
-    File_Utils::Matlab::print("/home/jontio/ds/3TBusb/linux_downloads/ai_hiss/ymne_include.m","ymne",ymne);
-    File_Utils::Matlab::print("/home/jontio/ds/3TBusb/linux_downloads/ai_hiss/ymse_include.m","ymse",ymse);
-//    printf("plot(a);hold on;plot(b(129:end));hold off;\n");
-//    printf("plot(a(1:end-128)./b(129:end));\n");
-
-
 
 
 }

@@ -114,6 +114,11 @@ public:
         buffer_index=0;
         buffer.fill(QVector<T>(m),n);
     }
+    QPair<int,int> getSize()
+    {
+        QPair<int,int> mn(m,n);
+        return mn;
+    }
     QVector<T> &update(const QVector<T> &input)
     {
         if(input.size()!=m)RUNTIME_ERROR("input vector size is not the expected size", input.size());
@@ -127,9 +132,62 @@ public:
         buffer_index++;buffer_index%=n;
         return *this;
     }
+    inline VectorDelayLine &operator<< (const QVector<T> &input)
+    {
+        update(input);
+        return *this;
+    }
 private:
     QVector<QVector<T>> buffer;
     int m=0;
+    int n=0;
+    int buffer_index=0;
+};
+
+template <class T>
+class ScalarDelayLine
+{
+public:
+    ScalarDelayLine()
+    {
+        setSize(0);
+    }
+    ScalarDelayLine(const int &n)
+    {
+        setSize(n);
+    }
+    void setSize(const int &n)
+    {
+        this->n=n;
+        buffer_index=0;
+        retval=0;
+        buffer.fill(0,n);
+    }
+
+    T update(const T &input)
+    {
+        if(n<=0)
+        {
+            retval=input;
+            return retval;
+        }
+        retval=(buffer[buffer_index]);
+        buffer[buffer_index]=input;
+        buffer_index++;buffer_index%=n;
+        return retval;
+    }
+    inline ScalarDelayLine &operator<< (const T &input)
+    {
+        update(input);
+        return *this;
+    }
+    inline operator T() const
+    {
+        return retval;
+    }
+private:
+    T retval=0;
+    QVector<T> buffer;
     int n=0;
     int buffer_index=0;
 };
@@ -255,6 +313,41 @@ private:
 };
 
 template <class T>
+class MovingMax
+{
+public:
+    MovingMax(){}
+    MovingMax(int n);
+    const T &update(const QVector<T> &input);
+    const T &update(const T &input);
+    void setSize(int n);
+    int getSize();
+    void flush();
+    //do not change max after init else it wont work hence why const and no direct access
+    inline const T &getMax(){return max;}
+    //insertion operator
+    inline const T &operator<< (const QVector<T> &input)
+    {
+        return update(input);
+    }
+    inline const T &operator<< (const T &input)
+    {
+        return update(input);
+    }
+    inline operator T() const
+    {
+        return max;
+    }
+protected:
+    inline const QVector<T> &getMv(){return mv;}
+private:
+    int n=0;
+    int start=0;
+    T max;
+    QVector<T> mv;
+};
+
+template <class T>
 class VectorMovingMin
 {
 public:
@@ -340,7 +433,7 @@ private:
     int n=0;
 };
 
-//getting really piss of at this point not going to test this
+//getting really pissed of at this point not going to test this
 class OverlappedRealFFTDelayLine
 {
     public:
@@ -388,11 +481,58 @@ public:
         update(input.Xfull);
         return *this;
     }
+    inline InverseOverlappedRealFFT &operator/= (const double scalar)
+    {
+        for(int k=0;k<QVector<double>::size();k++)
+        {
+            QVector<double>::operator[](k)/=scalar;
+        }
+        return *this;
+    }
+    inline InverseOverlappedRealFFT &operator= (const QVector<double> x)
+    {
+        QVector<double>::operator=(x);
+        return *this;
+    }
 private:
     QVector<double> window;
     QVector<double> x,x_part_last;
     JFFT fft;
     int n=0;
+};
+
+class InverseOverlappedRealFFTDelayLine
+{
+    public:
+    InverseOverlappedRealFFTDelayLine()
+    {
+        setSize(8000);
+    }
+    InverseOverlappedRealFFTDelayLine(int n)
+    {
+        setSize(n);
+    }
+    void setSize(int n)
+    {
+        this->n=n;
+        buffer_index=0;
+        buffer.fill(0,n);
+    }
+    void delay(InverseOverlappedRealFFT &ifft)
+    {
+        if(n<=0)return;
+        for(int k=0;k<ifft.size();k++)
+        {
+            double retval=(buffer[buffer_index]);
+            buffer[buffer_index]=ifft[k];
+            ifft[k]=retval;
+            buffer_index++;buffer_index%=n;
+        }
+    }
+private:
+    QVector<double> buffer;
+    int n=0;
+    int buffer_index=0;
 };
 
 class MovingNoiseEstimator : public VectorMovingAverage<double>
