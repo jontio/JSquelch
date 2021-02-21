@@ -1,21 +1,39 @@
-#include "jsquelch.h"
-#include "ui_jsquelch.h"
-#include <iostream>
-#include <QtDebug>
-#include <limits>
-#include <random>
-#include "util/stdio_utils.h"
-#include "util/file_utils.h"
+#include "../src/dsp/dsp.h"
+#include "../src/util/RuntimeError.h"
+#include "../src/util/stdio_utils.h"
+#include "../src/util/file_utils.h"
 #include <QFile>
+#include <QDir>
+#include <QDataStream>
+#include <iostream>
 
-using namespace std;
+//important for Qt include cpputest last as it mucks up new and causes compiling to fail
+#include "CppUTest/TestHarness.h"
 
+//this unit test is the big one and tests the C++ algo implimentation with
+//that of matlab. the output signal and snr are compared
 
-JSquelch::JSquelch(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::JSquelch)
+TEST_GROUP(Test_FileDetectionTests)
 {
-    ui->setupUi(this);
+    const double double_tolerance_for_db_snr=0.13;
+    const double double_tolerance_for_output_signal=0.05;
+
+    //cpputest does not seem to work for qt accessing io such as qfile qdebug etc
+    //i get momory leak messages so im turning it off for this unit where i really want qfile
+    void setup()
+    {
+        MemoryLeakWarningPlugin::turnOffNewDeleteOverloads();
+    }
+
+    void teardown()
+    {
+        MemoryLeakWarningPlugin::turnOnNewDeleteOverloads();
+    }
+};
+
+TEST(Test_FileDetectionTests, ProcessAudioTest)
+{
+    //reads a raw file processes it and write the result back to disk
 
     //algo things
     //these settings have to match exactly with the create.m Matlab script
@@ -32,8 +50,6 @@ JSquelch::JSquelch(QWidget *parent)
     JDsp::MovingMax<double> movmax(movmax_delay_in_frames/ifft.getOutSize());
     JDsp::InverseOverlappedRealFFTDelayLine delayline(movmax_delay_in_frames/2.0);//this should be half of movave
     JDsp::ScalarDelayLine<double> delayline2(movmax_delay_in_frames/(128*2)-31);//not sure how this changes for mne and mse
-
-    double last_snr=0;
 
     //load test file
     QFile file(QString(MATLAB_PATH)+"/test_signal_time.raw");
@@ -79,14 +95,8 @@ JSquelch::JSquelch(QWidget *parent)
         ifft/=(1.25*movmax);//normalize the time domain output signal
 
         delayline2.delay(mse.voice_snr_estimate);//delay snr as audio is delayed
-        if(isnan(mse.voice_snr_estimate))
-        {
-//            continue;//some snr estimates may be nan. if so then needs to be ignored
-            mse.voice_snr_estimate=last_snr;
-        }
+        if(std::isnan(mse.voice_snr_estimate))continue;//some snr estimates may be nan. if so then needs to be ignored
         double snr_db=10.0*log10(mse.voice_snr_estimate);
-
-        last_snr=mse.voice_snr_estimate;
 
         //keep snr db
         actual_snr_estimate_db_signal+=snr_db;
@@ -103,9 +113,12 @@ JSquelch::JSquelch(QWidget *parent)
     double fps=((double)(fft.getInSize()*actual_snr_estimate_db_signal.size()))/(elapsed.count()/1000.0);
     const double Fs=8000;
     double cpu_load=Fs/fps;
-    std::cout <<"cpu_load="<<cpu_load*100.0<<"% at "<<Fs<<"Hz sample rate"<< std::endl;
+    std::cout <<"File conversion: cpu_load="<<cpu_load*100.0<<"% at "<<Fs<<"Hz sample rate"<< std::endl;
 
-    file.setFileName(QString(MATLAB_PATH)+"/delme.raw");
+#ifdef GENERATE_TEST_OUTPUT_FILES
+    QDir dir;
+    dir.mkpath(QString(TEST_OUTPUT_PATH));
+    file.setFileName(QString(TEST_OUTPUT_PATH)+"/ProcessAudioTest.raw");
     if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
         RUNTIME_ERROR("failed to open file for writing",1);
@@ -115,12 +128,7 @@ JSquelch::JSquelch(QWidget *parent)
         datastream<<actual_output_signal[k];
     }
     file.close();
+#endif
 
-
-}
-
-JSquelch::~JSquelch()
-{
-    delete ui;
 }
 

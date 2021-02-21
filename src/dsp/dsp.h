@@ -163,7 +163,6 @@ public:
         retval=0;
         buffer.fill(0,n);
     }
-
     T update(const T &input)
     {
         if(n<=0)
@@ -175,6 +174,10 @@ public:
         buffer[buffer_index]=input;
         buffer_index++;buffer_index%=n;
         return retval;
+    }
+    void delay(T &input)
+    {
+        input=update(input);
     }
     inline ScalarDelayLine &operator<< (const T &input)
     {

@@ -3,6 +3,7 @@
 #include "../src/util/stdio_utils.h"
 #include "../src/util/file_utils.h"
 #include <QFile>
+#include <QDir>
 #include <QDataStream>
 #include <iostream>
 
@@ -79,9 +80,11 @@ TEST(Test_MatlabCompare, SignalOutputTest)
     }
     file.close();
 
-#ifdef GENERATE_FILES_FOR_MATLAB
+#ifdef GENERATE_TEST_OUTPUT_FILES
     //save actual output signal to disk in the matlab folder for use in matlab
-    File_Utils::Matlab::print((QString(MATLAB_PATH)+"/actual_output_signal_include.m").toLocal8Bit().data(),"actual_output_signal",actual_output_signal);
+    QDir dir;
+    dir.mkpath(QString(TEST_OUTPUT_PATH));
+    File_Utils::Matlab::print((QString(TEST_OUTPUT_PATH)+"/actual_output_signal_include.m").toLocal8Bit().data(),"actual_output_signal",actual_output_signal);
 #endif
 
     //load expected_snr_estimate_db_signal file
@@ -162,9 +165,11 @@ TEST(Test_MatlabCompare, SNRTest)
     double cpu_load=Fs/fps;
     std::cout << std::endl << std::endl <<"Up to snr estimate part of algo: cpu_load="<<cpu_load*100.0<<"% at "<<Fs<<"Hz sample rate. fps="<<fps<< std::endl;
 
-#ifdef GENERATE_FILES_FOR_MATLAB
+#ifdef GENERATE_TEST_OUTPUT_FILES
     //save actual snr estimate db signal to disk in the matlab folder for use in matlab
-    File_Utils::Matlab::print((QString(MATLAB_PATH)+"/actual_snr_estimate_db_signal_include.m").toLocal8Bit().data(),"actual_snr_estimate_db_signal",actual_snr_estimate_db_signal);
+    QDir dir;
+    dir.mkpath(QString(TEST_OUTPUT_PATH));
+    File_Utils::Matlab::print((QString(TEST_OUTPUT_PATH)+"/actual_snr_estimate_db_signal_include.m").toLocal8Bit().data(),"actual_snr_estimate_db_signal",actual_snr_estimate_db_signal);
 #endif
 
     //load expected_snr_estimate_db_signal file

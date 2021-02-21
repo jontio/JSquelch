@@ -19,7 +19,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CI {
 # GENERATE_FILES_FOR_MATLAB will create files in the matlab folder
 # Only needed if you want to export things to matlab for tesing there
-  DEFINES += GENERATE_FILES_FOR_MATLAB
+  DEFINES += GENERATE_TEST_OUTPUT_FILES
   SOURCES += \
     tests/testall.cpp \
     tests/dsp_movingaverage_tests.cpp \
@@ -41,7 +41,8 @@ CI {
     tests/matlab_compare_tests.cpp \
     tests/dsp_movingmax_tests.cpp \
     tests/dsp_scalardelayline_tests.cpp \
-    tests/dsp_inverseoverlappedrealfftdelayline_tests.cpp
+    tests/dsp_inverseoverlappedrealfftdelayline_tests.cpp \
+    tests/signal_detection_tests.cpp
 HEADERS += \
     tests/test_snr_estimation_input_257_by_100.h \
     tests/test_snr_estimation_output_db_1_by_100.h \
@@ -61,7 +62,8 @@ SOURCES += \
     src/dsp/dsp.cpp \
     src/util/RuntimeError.cpp \
     src/util/file_utils.cpp \
-    src/util/stdio_utils.cpp
+    src/util/stdio_utils.cpp \
+    src/voicedetectionalgo.cpp
 HEADERS += \
     ../JFFT/jfft.h \
     src/jsquelch.h \
@@ -69,12 +71,14 @@ HEADERS += \
     src/dsp/dsp.h \
     src/util/RuntimeError.h \
     src/util/file_utils.h \
-    src/util/stdio_utils.h
+    src/util/stdio_utils.h \
+    src/voicedetectionalgo.h
 
 FORMS += \
     src/jsquelch.ui
 
 DEFINES+= MATLAB_PATH=\\\"$${PWD}/matlab/\\\"
+DEFINES+= TEST_OUTPUT_PATH=\\\"$${PWD}/test_output/\\\"
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -88,7 +88,9 @@ xlabel('time (s)');
 title('Voice signal to noise estimate');
 
 %plotting actual max snr estimate
+cd('../test_output');
 actual_snr_estimate_db_signal_include();
+cd('../matlab');
 hold on;
 actual_snr_estimate_db_signal=actual_snr_estimate_db_signal(86:end);%there is an offset
 plot(linspace(0,numel(actual_snr_estimate_db_signal)*128/Fs,numel(actual_snr_estimate_db_signal)),actual_snr_estimate_db_signal);
@@ -120,7 +122,9 @@ spectrogram(x,512,250,[],Fs,'yaxis');
 title('output signal');
 
 %plotting expected and actual output signal
+cd('../test_output');
 actual_output_signal_include();
+cd('../matlab');
 figure;
 plot(linspace(0,numel(x)/Fs,numel(x)),x(1:end));
 hold on;

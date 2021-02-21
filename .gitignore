@@ -71,3 +71,8 @@ Thumbs.db
 *.dll
 *.exe
 
+# other
+test_output/*
+
+
+
