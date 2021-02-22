@@ -6,6 +6,7 @@ Next step of the voice detection code.
 
 I have added heaps of classes to the JDsp library, we now have...
 
+```
 Hann
 StrangeSineCorrectionWindow
 VectorDelayLine
@@ -24,6 +25,7 @@ MovingNoiseEstimator
 Normalize
 MovingAverage
 MovingSignalEstimator
+```
 
 I'm not going to explain all of them. There are various operator overloading for ease of use but you don't have to use them if you don't want to. Almost all classes have at least some unit testing code.
 
