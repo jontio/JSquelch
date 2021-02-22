@@ -4,46 +4,83 @@
 
 Next step of the voice detection code.
 
-This commit I have added VectorMovingMinWithAssociate OverlappedRealFFT and MovingNoiseEstimator.
+I have added heaps of classes to the JDsp library, we now have...
 
-OverlappedRealFFT takes time domain input and outputs frequency domain. It uses overlapping and padding and takes the abs value as described in the web page.
+Hann
+StrangeSineCorrectionWindow
+VectorDelayLine
+ScalarDelayLine
+VectorMovingAverage
+VectorMovingVariance
+VectorMovingMax
+MovingMax
+VectorMovingMin
+VectorMovingMinWithAssociate
+OverlappedRealFFT
+OverlappedRealFFTDelayLine
+InverseOverlappedRealFFT
+InverseOverlappedRealFFTDelayLine
+MovingNoiseEstimator
+Normalize
+MovingAverage
+MovingSignalEstimator
 
-VectorMovingMinWithAssociate finds the min over a window and returns that value as well as an associated value, again as described in the web page.
+I'm not going to explain all of them. There are various operator overloading for ease of use but you don't have to use them if you don't want to. Almost all classes have at least some unit testing code.
 
-MovingNoiseEstimator is the main class and takes input from the output of the OverlappedRealFFT class and estimates the noise floor. It's used like so...
+I have now added the VoiceDetectionAlgo class. This is going to be the main algorithm class and uses all the classes in the JDsp library to do it's job. VoiceDetectionAlgo doesn't care about the input vector size so can be used for the arbitrary size buffers that come from soundcard drivers. To use it, it goes something like this (I've removed file error checking for easier reading)...
 
 ```C++
-//normally distributed numbers for the signal
-std::default_random_engine generator(1);
-std::normal_distribution<double> distribution(0.0,1.0);
+    VoiceDetectionAlgo algo;
 
-JDsp::OverlappedRealFFT fft(3);//for an fft that takes 3 as in will output 2*3+1=7
-QVector<double> x;//this would be the input signal split up into blocks
-JDsp::MovingNoiseEstimator mne(fft.getOutSize(),16,16,32);
-for(int k=0;k<640;k++)
-{
-    x={distribution(generator),distribution(generator),distribution(generator)};
-    mne<<(fft<<x);
-    if((k+1)%64)continue;
-    qDebug()<<mne;
-}
-```
+    //load test file
+    QFile file("test_signal_time.raw");
+    file.open(QIODevice::ReadOnly);
+    QDataStream datastream(&file);
+    datastream.setByteOrder(QDataStream::LittleEndian);
+    datastream.setFloatingPointPrecision (QDataStream::SinglePrecision);
 
-The output of this is...
+    QVector<double> x;
+    x.fill(0,128);
 
-```
-Noise(1.00975, 1.01956, 1.04914, 1.10431, 1.12261, 1.13722, 1.16988)
-Noise(1.22996, 1.22627, 1.23693, 1.23886, 1.25076, 1.29969, 1.30799)
-Noise(1.00903, 1.07507, 1.19302, 1.30689, 1.363, 1.37509, 1.35586)
-Noise(1.2335, 1.23451, 1.22991, 1.18543, 1.15753, 1.14204, 1.13511)
-Noise(1.0106, 1.03077, 1.07481, 1.11599, 1.14903, 1.1484, 1.10748)
-Noise(0.875575, 0.938062, 1.05466, 1.12679, 1.24008, 1.3088, 1.30957)
-Noise(1.19341, 1.18137, 1.14924, 1.13763, 1.17851, 1.21613, 1.31142)
-Noise(1.0965, 1.13382, 1.14679, 1.1303, 1.13517, 1.18505, 1.22808)
-Noise(0.929295, 0.951046, 1.03854, 1.18444, 1.19993, 1.18092, 1.13159)
-Noise(0.996635, 1.01634, 1.06267, 1.11054, 1.12922, 1.10954, 1.05887)
-```
+    //what we want from the algo output
+    QVector<double> actual_snr_estimate_db_signal;
+    QVector<double> actual_output_signal;
 
-As you can see each frequency bin has a noise of about 1 which the same as the standard deviation of the signal in the time domain.
+    //run algo over file
+    while(!file.atEnd())
+    {
+        //read some audio
+        for(int i=0;i<x.size();i++)
+        {
+            if(file.atEnd())break;
+            datastream>>x[i];
+        }
+        if(file.atEnd())break;
 
+        //add the audio to the algo
+        algo+=x;
+
+        //process the audio wile we have some
+        while(!algo.process().empty())
+        {
+            //skip nan blocks
+            if(isnan(algo.snr_db))continue;
+
+            //keep snr_db
+            actual_snr_estimate_db_signal+=algo.snr_db;
+
+            //keep output signal when snr_db is good
+            if(algo.snr_db<5.0) continue;
+            actual_output_signal+=algo.ifft;
+        }
+
+    }
+    file.close();
+
+
+    file.setFileName("audio_out.raw");
+    file.open(QIODevice::WriteOnly|QIODevice::Truncate));
+    for(int k=0;k<actual_output_signal.size();k++)datastream<<actual_output_signal[k];
+    file.close();
+```    
 

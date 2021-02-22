@@ -10,8 +10,7 @@
 //important for Qt include cpputest last as it mucks up new and causes compiling to fail
 #include "CppUTest/TestHarness.h"
 
-//this unit test is the big one and tests the C++ algo implimentation with
-//that of matlab. the output signal and snr are compared
+//this unit test creates a raw audio file in LE 32bit float 8000Hz mono doing the algo
 
 TEST_GROUP(Test_FileDetectionTests)
 {

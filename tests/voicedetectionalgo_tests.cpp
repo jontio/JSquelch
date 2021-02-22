@@ -1,22 +1,39 @@
-#include "jsquelch.h"
-#include "ui_jsquelch.h"
-#include <iostream>
-#include <QtDebug>
-#include <limits>
-#include <random>
-#include "util/stdio_utils.h"
-#include "util/file_utils.h"
+#include "../src/dsp/dsp.h"
+#include "../src/util/RuntimeError.h"
+#include "../src/util/stdio_utils.h"
+#include "../src/util/file_utils.h"
+#include "../src/voicedetectionalgo.h"
 #include <QFile>
 #include <QDir>
-#include "voicedetectionalgo.h"
+#include <QDataStream>
+#include <iostream>
 
-using namespace std;
+//important for Qt include cpputest last as it mucks up new and causes compiling to fail
+#include "CppUTest/TestHarness.h"
 
-JSquelch::JSquelch(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::JSquelch)
+//this unit test creates a raw audio file in LE 32bit float 8000Hz mono doing the algo
+
+TEST_GROUP(Test_VoiceDetectionAlgoTests)
 {
-    ui->setupUi(this);
+    const double double_tolerance_for_db_snr=0.13;
+    const double double_tolerance_for_output_signal=0.05;
+
+    //cpputest does not seem to work for qt accessing io such as qfile qdebug etc
+    //i get momory leak messages so im turning it off for this unit where i really want qfile
+    void setup()
+    {
+        MemoryLeakWarningPlugin::turnOffNewDeleteOverloads();
+    }
+
+    void teardown()
+    {
+        MemoryLeakWarningPlugin::turnOnNewDeleteOverloads();
+    }
+};
+
+TEST(Test_VoiceDetectionAlgoTests, AlgoProcessAudioTest)
+{
+    //reads a raw file processes it and write the result back to disk
 
     VoiceDetectionAlgo algo;
 
@@ -31,7 +48,7 @@ JSquelch::JSquelch(QWidget *parent)
     datastream.setFloatingPointPrecision (QDataStream::SinglePrecision);
 
     QVector<double> x;
-    x.fill(0,128);
+    x.fill(0,300);//size doesn't matter with this algo class
 
     //what we want from the algo output
     QVector<double> actual_snr_estimate_db_signal;
@@ -58,7 +75,7 @@ JSquelch::JSquelch(QWidget *parent)
         while(!algo.process().empty())
         {
             //skip nan blocks
-            if(isnan(algo.snr_db))continue;
+            if(std::isnan(algo.snr_db))continue;
 
             //keep snr_db
             actual_snr_estimate_db_signal+=algo.snr_db;
@@ -76,11 +93,12 @@ JSquelch::JSquelch(QWidget *parent)
     double fps=((double)(algo.ifft.getOutSize()*actual_snr_estimate_db_signal.size()))/(elapsed.count()/1000.0);
     const double Fs=8000;
     double cpu_load=Fs/fps;
-    std::cout <<"application: cpu_load="<<cpu_load*100.0<<"% at "<<Fs<<"Hz sample rate"<< std::endl;
+    std::cout <<"VoiceDetectionAlgoTests: cpu_load="<<cpu_load*100.0<<"% at "<<Fs<<"Hz sample rate"<< std::endl;
 
+#ifdef GENERATE_TEST_OUTPUT_FILES
     QDir dir;
     dir.mkpath(QString(TEST_OUTPUT_PATH));
-    file.setFileName(QString(TEST_OUTPUT_PATH)+"/delme.raw");
+    file.setFileName(QString(TEST_OUTPUT_PATH)+"/AlgoProcessAudioTest.raw");
     if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
         RUNTIME_ERROR("failed to open file for writing",1);
@@ -90,11 +108,7 @@ JSquelch::JSquelch(QWidget *parent)
         datastream<<actual_output_signal[k];
     }
     file.close();
+#endif
 
-}
-
-JSquelch::~JSquelch()
-{
-    delete ui;
 }
 
