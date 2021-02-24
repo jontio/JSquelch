@@ -39,7 +39,7 @@ public:
     QVector<double> &process();
     void setSettings(Settings settings);
     inline const Settings &getSettings(){return settings;}
-    inline VoiceDetectionAlgo &operator+=(const QVector<double> &input)
+    inline VoiceDetectionAlgo &operator<<(const QVector<double> &input)
     {
         addBuffer(input);
         return *this;

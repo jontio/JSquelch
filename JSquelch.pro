@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui multimedia
 TARGET = jsquelch
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -58,6 +58,7 @@ HEADERS += \
 
 SOURCES += \
     ../JFFT/jfft.cpp \
+    src/audioloopback.cpp \
     src/jsquelch.cpp \
     src/qled/qled.cpp \
     src/dsp/dsp.cpp \
@@ -67,6 +68,7 @@ SOURCES += \
     src/voicedetectionalgo.cpp
 HEADERS += \
     ../JFFT/jfft.h \
+    src/audioloopback.h \
     src/jsquelch.h \
     src/qled/qled.h \
     src/dsp/dsp.h \

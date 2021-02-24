@@ -69,7 +69,7 @@ TEST(Test_VoiceDetectionAlgoTests, AlgoProcessAudioTest)
         if(file.atEnd())break;
 
         //add the audio to the algo
-        algo+=x;
+        algo<<x;
 
         //process the audio wile we have some
         while(!algo.process().empty())

@@ -14,11 +14,11 @@
    <string>JSquelch</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLed" name="label">
+   <widget class="QLed" name="led_snr">
     <property name="geometry">
      <rect>
-      <x>270</x>
-      <y>30</y>
+      <x>20</x>
+      <y>20</y>
       <width>40</width>
       <height>40</height>
      </rect>
@@ -31,6 +31,22 @@
     </property>
     <property name="scaledContents">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_snr">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>30</y>
+      <width>80</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0dB</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
   </widget>

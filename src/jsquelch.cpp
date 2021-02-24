@@ -10,13 +10,66 @@
 #include <QDir>
 #include "voicedetectionalgo.h"
 
+
 using namespace std;
+
+void JSquelch::processAudio(const QVector<double> &input, QVector<double> &output)
+{
+
+    algo<<input;
+    output.clear();
+
+    //process the audio wile we have some
+    while(!algo.process().empty())
+    {
+        //skip nan blocks
+        if(isnan(algo.snr_db))algo.snr_db=-100;
+
+
+        if(algo.snr_db<5.0)
+        {
+            algo.ifft.fill(0);
+        }
+        output+=algo.ifft;
+    }
+
+//    if(algo.snr_db>5)output=input;
+//    else
+//    {
+//        output.fill(0,input.size());
+//    }
+
+//    if(output.size()==0)
+
+//    qDebug()<<input.size()<<output.size();
+//    qDebug()<<algo.snr_db;
+
+
+
+    if(algo.snr_db>5)ui->led_snr->On(true);
+    else ui->led_snr->On(false);
+    ui->label_snr->setText(QString::asprintf("%0.1f",algo.snr_db)+"dB");
+
+
+//    output=input;
+
+//    output.resize(input.size());
+//    for(int k=0;k<input.size();k++)
+//    {
+//        output[k]=0;//input[k];
+//    }
+}
 
 JSquelch::JSquelch(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::JSquelch)
 {
     ui->setupUi(this);
+    connect(&audioLoopback,&AudioLoopback::processAudio,this,&JSquelch::processAudio,Qt::DirectConnection);
+
+    audioLoopback.start();
+
+    return;
 
     VoiceDetectionAlgo algo;
 
@@ -51,8 +104,8 @@ JSquelch::JSquelch(QWidget *parent)
         }
         if(file.atEnd())break;
 
-        //add the audio to the algo
-        algo+=x;
+        //put the audio into the algo
+        algo<<x;
 
         //process the audio wile we have some
         while(!algo.process().empty())
