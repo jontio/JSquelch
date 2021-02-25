@@ -20,6 +20,7 @@ void AudioLoopback::clear()
     circ_buffer_head=0;
     circ_buffer_tail=circ_buffer.size()/2;
     x=0;
+    fract_buffer_space=0;
 }
 
 void AudioLoopback::start()
@@ -103,7 +104,8 @@ qint64 AudioLoopback::readData(char *data, qint64 maxlen)
     }
 
     //space in -1 to 1. we want this to be about 0
-    double fract_buffer_space=(2.0*(double)forward/circ_buffer.size())-1.0;
+    const double alpha=0.001;
+    fract_buffer_space=fract_buffer_space*(1.0-alpha)+(alpha)*((2.0*(double)forward/circ_buffer.size())-1.0);
 
 #ifdef TESTING_AUDIOLOOPBACK
     static int slow_inserts=0;
@@ -141,7 +143,8 @@ qint64 AudioLoopback::readData(char *data, qint64 maxlen)
         circ_buffer_tail=tmp_circ_buffer_tail;
 
         //slow move sampling so we can do a +-1 jump of x when needed
-///////////////        x=x*(1.0-0.001)+0.001*fract_buffer_space;
+        //will make a small wooshing sound when adjusting. bother
+        x=x*(1.0-0.001)+0.001*fract_buffer_space;
 
         //interpolation
         double y=0;
@@ -209,7 +212,7 @@ qint64 AudioLoopback::writeData(const char *data, qint64 len)
 #ifdef TESTING_AUDIOLOOPBACK
     static int counter=0;
     counter++;counter%=2000;//2000->500ppm 1000->1000ppm, 500->2000ppm etc
-    const bool playslow=true;
+    const bool playslow=false;//true;
 
     const qint16 *ptr = reinterpret_cast<const qint16 *>(data);
     int numofsamples=(len/sizeof(qint16));

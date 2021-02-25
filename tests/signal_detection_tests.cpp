@@ -47,7 +47,7 @@ TEST(Test_FileDetectionTests, ProcessAudioTest)
     //for alignment of output signal
     double movmax_delay_in_frames=8000*1;
     JDsp::MovingMax<double> movmax(movmax_delay_in_frames/ifft.getOutSize());
-    JDsp::InverseOverlappedRealFFTDelayLine delayline(movmax_delay_in_frames/2.0);//this should be half of movave
+    JDsp::AudioDelayLine delayline(movmax_delay_in_frames/2.0);//this should be half of movave
     JDsp::ScalarDelayLine<double> delayline2(movmax_delay_in_frames/(128*2)-31);//not sure how this changes for mne and mse
 
     //load test file

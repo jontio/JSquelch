@@ -12,7 +12,7 @@
 //this unit test is the big one and tests the C++ algo implimentation with
 //that of matlab. the output signal and snr are compared
 
-TEST_GROUP(Test_DSP_InverseOverlappedRealFFTDelayLine)
+TEST_GROUP(Test_DSP_AudioDelayLine)
 {
     const double double_tolerance=0.0000001;
 
@@ -29,10 +29,10 @@ TEST_GROUP(Test_DSP_InverseOverlappedRealFFTDelayLine)
     }
 };
 
-TEST(Test_DSP_InverseOverlappedRealFFTDelayLine, DoubleZeroTest)
+TEST(Test_DSP_AudioDelayLine, DoubleZeroTest)
 {
     JDsp::InverseOverlappedRealFFT ifft(128);
-    JDsp::InverseOverlappedRealFFTDelayLine delayline(0);
+    JDsp::AudioDelayLine delayline(0);
     for(int k=0;k<ifft.size();k++)
     {
         ifft[k]=k;
@@ -47,10 +47,10 @@ TEST(Test_DSP_InverseOverlappedRealFFTDelayLine, DoubleZeroTest)
 
 }
 
-TEST(Test_DSP_InverseOverlappedRealFFTDelayLine, DoubleDelayTest)
+TEST(Test_DSP_AudioDelayLine, DoubleDelayTest)
 {
     JDsp::InverseOverlappedRealFFT ifft(128);
-    JDsp::InverseOverlappedRealFFTDelayLine delayline(100);
+    JDsp::AudioDelayLine delayline(100);
     double current_val=0;
     QVector<double> result;
     for(int k=0;k<ifft.size();k++)

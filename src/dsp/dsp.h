@@ -376,6 +376,33 @@ public:
         update(input);
         return *this;
     }
+
+    inline OverlappedRealFFT &operator*=(double scalar)
+    {
+        for(int k=0;k<Xabs.size();k++)
+        {
+            Xabs[k]*=scalar;
+        }
+        for(int k=0;k<Xabs.size();k++)
+        {
+            Xfull[k]*=scalar;
+        }
+        //the rest is complex conjugate stuff so dont have to multiply
+        auto p=Xfull.end();
+        for(int k=1;k<(Xabs.size()-1);k++)
+        {
+            p--;
+            *p=std::conj(Xfull[k]);
+        }
+        return *this;
+    }
+
+    inline OverlappedRealFFT &operator/=(double scalar)
+    {
+        operator*=(1.0/scalar);
+        return *this;
+    }
+
 private:
     QVector<double> buffer;
     QVector<double> x;
@@ -440,11 +467,20 @@ public:
         }
         return *this;
     }
+    inline InverseOverlappedRealFFT &operator*= (const double scalar)
+    {
+        for(int k=0;k<QVector<double>::size();k++)
+        {
+            QVector<double>::operator[](k)*=scalar;
+        }
+        return *this;
+    }
     inline InverseOverlappedRealFFT &operator= (const QVector<double> x)
     {
         QVector<double>::operator=(x);
         return *this;
     }
+
 private:
     QVector<double> window;
     QVector<double> x,x_part_last;
@@ -452,14 +488,14 @@ private:
     int n=0;
 };
 
-class InverseOverlappedRealFFTDelayLine
+class AudioDelayLine
 {
     public:
-    InverseOverlappedRealFFTDelayLine()
+    AudioDelayLine()
     {
         setSize(8000);
     }
-    InverseOverlappedRealFFTDelayLine(int n)
+    AudioDelayLine(int n)
     {
         setSize(n);
     }
@@ -469,14 +505,21 @@ class InverseOverlappedRealFFTDelayLine
         buffer_index=0;
         buffer.fill(0,n);
     }
-    void delay(InverseOverlappedRealFFT &ifft)
+    void delay(double &input)
+    {
+        double retval=(buffer[buffer_index]);
+        buffer[buffer_index]=input;
+        input=retval;
+        buffer_index++;buffer_index%=n;
+    }
+    void delay(QVector<double> &input)
     {
         if(n<=0)return;
-        for(int k=0;k<ifft.size();k++)
+        for(int k=0;k<input.size();k++)
         {
             double retval=(buffer[buffer_index]);
-            buffer[buffer_index]=ifft[k];
-            ifft[k]=retval;
+            buffer[buffer_index]=input[k];
+            input[k]=retval;
             buffer_index++;buffer_index%=n;
         }
     }
@@ -549,6 +592,11 @@ public:
         return *this;
     }
 
+    inline operator T() const
+    {
+        return val;
+    }
+
 protected:
     int MASz=0;
     T MASum;
@@ -576,12 +624,79 @@ public:
         update(input.Xabs);
         return *this;
     }
+
+    inline MovingSignalEstimator &operator/= (const double scalar)
+    {
+        for(int k=0;k<val.size();k++)
+        {
+            val[k]/=scalar;
+        }
+        return *this;
+    }
+    inline MovingSignalEstimator &operator*= (const double scalar)
+    {
+        for(int k=0;k<val.size();k++)
+        {
+            val[k]*=scalar;
+        }
+        return *this;
+    }
+
     double voice_snr_estimate=0;
 private:
     VectorMovingVariance<double> moving_stats;
     MovingAverage<double> ma;
     int start_index=0;
     int end_index=0;
+};
+
+
+class AGC
+{
+public:
+    AGC()
+    {
+        agc_level=0.65;
+        max_gain=10.0;
+        K=0.000001;
+        D.setSize(256);
+
+        max_g=std::log(max_gain);
+        A=2.0*std::log(agc_level/std::sqrt(2.0));
+        g=0;
+    }
+    void update(QVector<double> &input)
+    {
+        for(int n=0;n<input.size();n++)
+        {
+            D.update(input[n]);
+            double y=input[n]*std::exp(g);
+            double z=D*std::exp(2.0*g);
+            double e=A-std::log(z);
+            g=g+K*e;
+            if(std::isnan(g))g=0;
+            if(g>max_g)g=max_g;
+
+            if(std::isnan(y))y=0;
+
+            if(y>agc_level)y=agc_level;
+            if(y<-agc_level)y=-agc_level;
+
+            input[n]=y;
+        }
+    }
+
+
+//private:
+
+    double agc_level;
+    double max_gain;
+    double K;
+    MovingAverage<double> D;
+
+    double g;
+    double A;
+    double max_g;
 };
 
 }

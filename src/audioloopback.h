@@ -46,6 +46,7 @@ private:
     int circ_buffer_head;
     int circ_buffer_tail;
     double x;
+    double fract_buffer_space;
     void clear();
     QVector<double> m_processAudio_input;
     QVector<double> m_processAudio_output;

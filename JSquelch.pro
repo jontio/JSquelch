@@ -41,9 +41,9 @@ CI {
     tests/matlab_compare_tests.cpp \
     tests/dsp_movingmax_tests.cpp \
     tests/dsp_scalardelayline_tests.cpp \
-    tests/dsp_inverseoverlappedrealfftdelayline_tests.cpp \
     tests/signal_detection_tests.cpp \
-    tests/voicedetectionalgo_tests.cpp
+    tests/voicedetectionalgo_tests.cpp \
+    tests/dsp_AudioDelayLine_tests.cpp
 HEADERS += \
     tests/test_snr_estimation_input_257_by_100.h \
     tests/test_snr_estimation_output_db_1_by_100.h \
