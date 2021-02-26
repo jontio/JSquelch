@@ -41,7 +41,6 @@ void VoiceDetectionAlgo::setSettings(Settings settings)
     fft.setInSize(settings.io_size);
     mne.setSize(fft.getOutSize(),settings.moving_noise_estimator.moving_stats_window_size,settings.moving_noise_estimator.moving_minimum_window_size,settings.moving_noise_estimator.output_moving_average_window_size);
     mse.setSize(fft.getOutSize(),settings.moving_signal_estimator.moving_stats_window_size,settings.moving_signal_estimator.min_voice_bin,settings.moving_signal_estimator.max_voice_bin,settings.moving_signal_estimator.output_moving_voice_snr_estimate_window_size,0);
-    ifft.setOutSize(fft.getInSize());
     fft_delay.setSize(fft,settings.fft_delay_size);
 
     //works in output time domain

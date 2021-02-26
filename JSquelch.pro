@@ -77,6 +77,11 @@ HEADERS += \
     src/util/stdio_utils.h \
     src/voicedetectionalgo.h
 
+INCLUDEPATH += /usr/include/opus
+
+
+LIBS += -lopus -lopusenc -logg
+
 FORMS += \
     src/jsquelch.ui
 

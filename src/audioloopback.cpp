@@ -144,7 +144,7 @@ qint64 AudioLoopback::readData(char *data, qint64 maxlen)
 
         //slow move sampling so we can do a +-1 jump of x when needed
         //will make a small wooshing sound when adjusting. bother
-        x=x*(1.0-0.001)+0.001*fract_buffer_space;
+        x=x*(1.0-0.0005)+0.0005*fract_buffer_space;
 
         //interpolation
         double y=0;

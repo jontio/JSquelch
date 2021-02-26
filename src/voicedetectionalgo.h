@@ -43,8 +43,6 @@ public:
     }
 
     double snr_db;
-    JDsp::InverseOverlappedRealFFT ifft;//maybe should do a copy or use a getter as the user shouldn't really be able to change ifft
-
 
 private:
 

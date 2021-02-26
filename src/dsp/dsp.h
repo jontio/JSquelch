@@ -656,10 +656,10 @@ class AGC
 public:
     AGC()
     {
-        agc_level=0.65;
-        max_gain=10.0;
-        K=0.000001;
-        D.setSize(256);
+        agc_level=0.75/4.0;
+        max_gain=100.0;
+        K=0.0001;
+        D.setSize(800);
 
         max_g=std::log(max_gain);
         A=2.0*std::log(agc_level/std::sqrt(2.0));
@@ -669,18 +669,21 @@ public:
     {
         for(int n=0;n<input.size();n++)
         {
-            D.update(input[n]);
+            D.update(input[n]*input[n]);
             double y=input[n]*std::exp(g);
             double z=D*std::exp(2.0*g);
             double e=A-std::log(z);
+            if(e>4)e=4;
+            if(e<-4)e=-4;
+            if(std::isnan(e))e=0;
             g=g+K*e;
             if(std::isnan(g))g=0;
             if(g>max_g)g=max_g;
 
             if(std::isnan(y))y=0;
 
-            if(y>agc_level)y=agc_level;
-            if(y<-agc_level)y=-agc_level;
+            if(y>0.99)y=0.99;
+            if(y<-0.99)y=-0.99;
 
             input[n]=y;
         }
