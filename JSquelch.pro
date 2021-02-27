@@ -43,7 +43,8 @@ CI {
     tests/dsp_scalardelayline_tests.cpp \
     tests/signal_detection_tests.cpp \
     tests/voicedetectionalgo_tests.cpp \
-    tests/dsp_AudioDelayLine_tests.cpp
+    tests/dsp_AudioDelayLine_tests.cpp \
+    tests/dsp_agc_tests.cpp
 HEADERS += \
     tests/test_snr_estimation_input_257_by_100.h \
     tests/test_snr_estimation_output_db_1_by_100.h \
@@ -59,6 +60,7 @@ HEADERS += \
 SOURCES += \
     ../JFFT/jfft.cpp \
     src/audioloopback.cpp \
+    src/compressaudiodiskwriter.cpp \
     src/jsquelch.cpp \
     src/qled/qled.cpp \
     src/dsp/dsp.cpp \
@@ -69,6 +71,7 @@ SOURCES += \
 HEADERS += \
     ../JFFT/jfft.h \
     src/audioloopback.h \
+    src/compressaudiodiskwriter.h \
     src/jsquelch.h \
     src/qled/qled.h \
     src/dsp/dsp.h \

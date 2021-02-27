@@ -507,6 +507,7 @@ class AudioDelayLine
     }
     void delay(double &input)
     {
+        if(n<=0)return;
         double retval=(buffer[buffer_index]);
         buffer[buffer_index]=input;
         input=retval;
@@ -654,49 +655,22 @@ private:
 class AGC
 {
 public:
-    AGC()
+    struct Settings
     {
-        agc_level=0.75/4.0;
-        max_gain=100.0;
-        K=0.0001;
-        D.setSize(800);
-
-        max_g=std::log(max_gain);
-        A=2.0*std::log(agc_level/std::sqrt(2.0));
-        g=0;
-    }
-    void update(QVector<double> &input)
-    {
-        for(int n=0;n<input.size();n++)
-        {
-            D.update(input[n]*input[n]);
-            double y=input[n]*std::exp(g);
-            double z=D*std::exp(2.0*g);
-            double e=A-std::log(z);
-            if(e>4)e=4;
-            if(e<-4)e=-4;
-            if(std::isnan(e))e=0;
-            g=g+K*e;
-            if(std::isnan(g))g=0;
-            if(g>max_g)g=max_g;
-
-            if(std::isnan(y))y=0;
-
-            if(y>0.99)y=0.99;
-            if(y<-0.99)y=-0.99;
-
-            input[n]=y;
-        }
-    }
-
-
-//private:
-
-    double agc_level;
-    double max_gain;
-    double K;
-    MovingAverage<double> D;
-
+        double agc_level=1;
+        double max_gain=100.0;
+        double K=0.01;
+        int moving_max_window_size=8000;
+        int delayline_size=128;
+    };
+    AGC();
+    void update(QVector<double> &input,bool adjust=true);
+    void setSettings(const Settings &settings);
+    const Settings &getSettings(){return settings;}
+private:
+    Settings settings;
+    MovingMax<double> Dx;//moving max works better for voice. maybe moving mean works better for things like QAM etc
+    AudioDelayLine delayline;
     double g;
     double A;
     double max_g;

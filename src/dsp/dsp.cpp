@@ -5,6 +5,45 @@
 namespace JDsp
 {
 
+//----start of AGC
+
+AGC::AGC()
+{
+    setSettings(settings);
+}
+
+void AGC::setSettings(const Settings &settings)
+{
+    this->settings=settings;
+    Dx.setSize(settings.moving_max_window_size);
+    delayline.setSize(settings.delayline_size);
+    max_g=std::log(settings.max_gain);
+    A=2.0*std::log(settings.agc_level);//use this for moving max
+//    A=2.0*std::log(settings.agc_level/std::sqrt(2.0));//use this for movinf mean
+    g=0;
+}
+
+void AGC::update(QVector<double> &input,bool adjust)
+{
+    for(int n=0;n<input.size();n++)
+    {
+        double val=input[n];
+        Dx.update(val*val);
+        delayline.delay(val);
+        double y=val*std::exp(g);
+        double z=Dx*std::exp(2.0*g);
+        double e=A-std::log(z);
+        if(e>100)e=100;
+        if(e<-100)e=-100;
+        if(std::isnan(e))e=0;
+        if(adjust)g=g+settings.K*e;
+        if(g>max_g)g=max_g;
+        input[n]=y;
+    }
+}
+
+//----end of AGC
+
 //----start of MovingMax
 
 //define class for int, double.

@@ -44,6 +44,8 @@ public:
 
     double snr_db;
 
+    double snr_db_pre_delayline;
+
 private:
 
     Settings settings;
@@ -55,7 +57,7 @@ private:
     QVector<double> buffer;
     QVector<double> empty;
     JDsp::AudioDelayLine audio_out_delayline;//this should be half of movave
-    JDsp::ScalarDelayLine<double> snr_estimate_delayline;//not sure how this changes for mne and mse
+    JDsp::ScalarDelayLine<double> snr_db_delayline;//not sure how this changes for mne and mse
 
 };
 

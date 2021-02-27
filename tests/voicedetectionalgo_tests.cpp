@@ -82,7 +82,7 @@ TEST(Test_VoiceDetectionAlgoTests, AlgoProcessAudioTest)
 
             //keep output signal when snr_db is good
             if(algo.snr_db<5.0) continue;
-            actual_output_signal+=algo.ifft;
+            actual_output_signal+=algo;
         }
 
     }
@@ -90,7 +90,7 @@ TEST(Test_VoiceDetectionAlgoTests, AlgoProcessAudioTest)
 
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = finish - start;
-    double fps=((double)(algo.ifft.getOutSize()*actual_snr_estimate_db_signal.size()))/(elapsed.count()/1000.0);
+    double fps=((double)(algo.getSettings().io_size*actual_snr_estimate_db_signal.size()))/(elapsed.count()/1000.0);
     const double Fs=8000;
     double cpu_load=Fs/fps;
     std::cout <<"VoiceDetectionAlgoTests: cpu_load="<<cpu_load*100.0<<"% at "<<Fs<<"Hz sample rate"<< std::endl;

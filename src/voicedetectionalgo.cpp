@@ -45,7 +45,7 @@ void VoiceDetectionAlgo::setSettings(Settings settings)
 
     //works in output time domain
     audio_out_delayline.setSize(settings.audio_out_delayline_size_in_blocks*fft.getInSize());
-    snr_estimate_delayline.setSize(settings.snr_estimate_delayline_size_in_blocks);
+    snr_db_delayline.setSize(settings.snr_estimate_delayline_size_in_blocks);
 }
 
 QVector<double> &VoiceDetectionAlgo::process()
@@ -65,8 +65,9 @@ QVector<double> &VoiceDetectionAlgo::process()
     fft_delay.delay(fft);//fft delayline
     fft/=mne;//normalize output of fft
     mse<<fft;//output of fft into mse. calculates signal
-    snr_estimate_delayline.delay(mse.voice_snr_estimate);//delay snr
-    snr_db=10.0*log10(mse.voice_snr_estimate);//convert snr to db
+    snr_db_pre_delayline=10.0*log10(mse.voice_snr_estimate);//convert snr to db
+    snr_db=snr_db_pre_delayline;
+    snr_db_delayline.delay(snr_db);//delay snr
 
     //delay the audio to align with snr_db and return the audio
     audio_out_delayline.delay(*this);

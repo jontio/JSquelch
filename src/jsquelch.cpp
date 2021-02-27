@@ -8,8 +8,8 @@
 #include "util/file_utils.h"
 #include <QFile>
 #include <QDir>
-
-
+#include <QTimer>
+#include <QDateTime>
 
 using namespace std;
 
@@ -26,6 +26,18 @@ void JSquelch::processAudio(const QVector<double> &input, QVector<double> &outpu
         //limit the snr to be above -100
         if(std::isnan(algo.snr_db)||(algo.snr_db<-100))algo.snr_db=-100;
 
+        if(agc_on)
+        {
+            //update agc. this has a delayline in it so audio is delayed
+            //and wont sync with led. using snr_db_pre_delayline mean you
+            //can add a snr_db delay and get the led aligned
+            if(algo.snr_db_pre_delayline>threshold_level_db)
+            {
+                agc.update(algo,true);
+            }
+            else agc.update(algo,false);
+        }
+
         //silence the audio if snr is low
         //using hysteresis
         if(!audio_on_state)
@@ -38,27 +50,25 @@ void JSquelch::processAudio(const QVector<double> &input, QVector<double> &outpu
             if(algo.snr_db<(threshold_level_db-hysteresis_db))audio_on_state=false;
         }
 
-
         //add the audio to the output
         output+=algo;
+    }
+
+    //there should be a compressor here
+    for(int k=0;k<output.size();k++)
+    {
+        if(output[k]>0.999)output[k]=0.999;
+        if(output[k]<-0.999)output[k]=-0.999;
     }
 
     //turn on led and display snr
     ui->led_snr->On(audio_on_state);
     ui->label_snr->setText(QString::asprintf("%0.1f",algo.snr_db)+"dB");
 
-
-
-    if((audio_on_state)&&enc)
+    //record audio if wanted
+    if(audio_on_state)
     {
-
-        QVector<opus_int16> buf;
-        buf.resize(output.size());
-        for(int k=0;k<buf.size();k++)
-        {
-            buf[k]=((double)output[k])*32768.0;
-        }
-        ope_encoder_write(enc, buf.data(), buf.size());
+       audio_disk_writer.writeAudio(output);
     }
 
 }
@@ -69,15 +79,11 @@ JSquelch::JSquelch(QWidget *parent)
 {
     ui->setupUi(this);
 
-//    diskwriter=new CompressedAudioDiskWriter(this);
-
-    enc=nullptr;
-    comments = ope_comments_create();
-    ope_comments_add(comments, "ARTIST", "Someone");
-    ope_comments_add(comments, "TITLE", "Some track");
-    int error;
-    enc = ope_encoder_create_file("delme.ogg", comments, 8000, 1, 0, &error);
-
+    CompressAudioDiskWriter::Settings disk_writer_setings=audio_disk_writer.getSettings();
+    disk_writer_setings.filename="delme.ogg";
+    disk_writer_setings.bitRate=8000;
+    disk_writer_setings.nChannels=1;
+    //audio_disk_writer.setSettings(disk_writer_setings);
 
     connect(ui->spinBox_fft_delay_size,SIGNAL(valueChanged(int)),this,SLOT(spinBoxChanged(int)));
     connect(ui->spinBox_mse_max_voice_bin,SIGNAL(valueChanged(int)),this,SLOT(spinBoxChanged(int)));
@@ -92,10 +98,22 @@ JSquelch::JSquelch(QWidget *parent)
 
     connect(ui->doubleSpinBox_hysteresis_db,SIGNAL(valueChanged(double)),this,SLOT(doubleSpinBoxChanged(double)));
     connect(ui->doubleSpinBox_snr_threshold_level_db,SIGNAL(valueChanged(double)),this,SLOT(doubleSpinBoxChanged(double)));
+    connect(ui->checkBox_agc,SIGNAL(stateChanged(int)),this,SLOT(checkBoxStateChange(int)));
+    connect(ui->checkBox_save_audio,SIGNAL(stateChanged(int)),this,SLOT(checkBoxStateChange(int)));
+    connect(ui->lineEdit_audiopath,SIGNAL(textChanged(const QString &)),this,SLOT(lineEditTextChanged(const QString &)));
 
     connect(&audioLoopback,&AudioLoopback::processAudio,this,&JSquelch::processAudio,Qt::DirectConnection);
     applySettings();
     audioLoopback.start();
+}
+
+void JSquelch::lineEditTextChanged(const QString &text)
+{
+    Q_UNUSED(text);
+    if(ui->checkBox_save_audio->isChecked())
+    {
+        ui->checkBox_save_audio->click();
+    }
 }
 
 void JSquelch::spinBoxChanged(int value)
@@ -105,6 +123,12 @@ void JSquelch::spinBoxChanged(int value)
 }
 
 void JSquelch::doubleSpinBoxChanged(double value)
+{
+    Q_UNUSED(value);
+    applySettings();
+}
+
+void JSquelch::checkBoxStateChange(int value)
 {
     Q_UNUSED(value);
     applySettings();
@@ -122,6 +146,44 @@ void JSquelch::applySettings()
     //other
     hysteresis_db=ui->doubleSpinBox_hysteresis_db->value();
     threshold_level_db=ui->doubleSpinBox_snr_threshold_level_db->value();
+    agc_on=ui->checkBox_agc->isChecked();
+    //just use some hard coded settings for the agc
+    JDsp::AGC::Settings agc_settings=agc.getSettings();
+    agc_settings.K=0.01;
+    agc_settings.agc_level=1.0;
+    agc_settings.max_gain=100;
+    agc_settings.moving_max_window_size=8000;
+    agc_settings.delayline_size=8000;
+    agc.setSettings(agc_settings);
+    //for file saving
+    if(ui->checkBox_save_audio->isChecked())
+    {
+        CompressAudioDiskWriter::Settings disk_writer_setings=audio_disk_writer.getSettings();
+        if((!audio_disk_writer.isOpen())|| //not open
+                (disk_writer_setings.filepath!=ui->lineEdit_audiopath->text()))//or path name change
+        {
+
+            //create a file name
+            QDir dir;
+            QString cpath=ui->lineEdit_audiopath->text().trimmed();
+            if((cpath.size()>0)&&(cpath[0]=="~"))cpath=QDir::homePath()+cpath.remove(0,1);
+            dir.mkpath(cpath);
+            QDateTime datetime(QDateTime::currentDateTimeUtc());
+            QString filename_without_path=datetime.toString("yyMMdd_hhmmss")+".ogg";
+
+            disk_writer_setings.filepath=ui->lineEdit_audiopath->text();
+            disk_writer_setings.filename=filename_without_path;
+            disk_writer_setings.bitRate=8000;
+            disk_writer_setings.nChannels=1;
+            audio_disk_writer.setSettings(disk_writer_setings);
+        }
+    }
+    else {qDebug()<<"is not Checked";audio_disk_writer.close();}
+    if(audio_disk_writer.isOpen()!=ui->checkBox_save_audio->isChecked())
+    {
+        ui->checkBox_save_audio->click();
+    }
+
 
     //noise estimator
     settings.moving_noise_estimator.moving_stats_window_size=ui->spinBox_mne_moving_stats_window_size->value();
@@ -141,6 +203,7 @@ void JSquelch::applySettings()
 #include <QMessageBox>
 void JSquelch::closeEvent (QCloseEvent *event)
 {
+    Q_UNUSED(event);
 //    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "APP_NAME",
 //                                                                tr("Are you sure?\n"),
 //                                                                QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes,
@@ -155,13 +218,6 @@ void JSquelch::closeEvent (QCloseEvent *event)
 JSquelch::~JSquelch()
 {
     audioLoopback.stop();
-    if(enc)
-    {
-        ope_encoder_drain(enc);
-        ope_encoder_destroy(enc);
-        ope_comments_destroy(comments);
-        enc=nullptr;
-    }
     delete ui;
 }
 
