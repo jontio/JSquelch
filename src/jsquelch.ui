@@ -6,433 +6,472 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>922</width>
-    <height>544</height>
+    <width>935</width>
+    <height>555</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>JSquelch</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QGroupBox" name="groupBox">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>120</y>
-      <width>421</width>
-      <height>171</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>NoiseEstimator</string>
-    </property>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>40</y>
-       <width>401</width>
-       <height>121</height>
-      </rect>
-     </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_mne_moving_stats_window_size">
-        <property name="text">
-         <string>moving stats window size</string>
+   <property name="maximumSize">
+    <size>
+     <width>935</width>
+     <height>493</height>
+    </size>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="9,10">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,10,10">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,8">
+        <item>
+         <widget class="QGroupBox" name="groupBox_3">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>97</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Status</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
+            <widget class="QLed" name="led_snr">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="pixmap">
+              <pixmap resource="../images.qrc">:/images/off_led.svg</pixmap>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_snr">
+             <property name="text">
+              <string>0dB</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>228</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="minimumSize">
+         <size>
+          <width>427</width>
+          <height>178</height>
+         </size>
         </property>
+        <property name="title">
+         <string>NoiseEstimator</string>
+        </property>
+        <widget class="QWidget" name="layoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>401</width>
+           <height>121</height>
+          </rect>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_mne_moving_stats_window_size">
+            <property name="text">
+             <string>moving stats window size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinBox_mne_moving_stats_window_size">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>16</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>moving minimum window size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="spinBox_mne_moving_minimum_window_size">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>16</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>output moving average window size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="spinBox_mne_output_moving_average_window_size">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>62</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="spinBox_mne_moving_stats_window_size">
-        <property name="maximum">
-         <number>999</number>
+      <item>
+       <widget class="QGroupBox" name="groupBox_4">
+        <property name="minimumSize">
+         <size>
+          <width>427</width>
+          <height>178</height>
+         </size>
         </property>
-        <property name="value">
-         <number>16</number>
+        <property name="title">
+         <string>Delay compensation</string>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>moving minimum window size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="spinBox_mne_moving_minimum_window_size">
-        <property name="maximum">
-         <number>999</number>
-        </property>
-        <property name="value">
-         <number>16</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>output moving average window size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="spinBox_mne_output_moving_average_window_size">
-        <property name="maximum">
-         <number>999</number>
-        </property>
-        <property name="value">
-         <number>62</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_2">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>10</y>
-      <width>471</width>
-      <height>221</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>SignalEstimator</string>
-    </property>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>40</y>
-       <width>451</width>
-       <height>163</height>
-      </rect>
-     </property>
-     <layout class="QFormLayout" name="formLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>moving stats window size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="spinBox_mse_moving_stats_window_size">
-        <property name="maximum">
-         <number>999</number>
-        </property>
-        <property name="value">
-         <number>8</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>min voice bin</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="spinBox_mse_min_voice_bin">
-        <property name="maximum">
-         <number>999</number>
-        </property>
-        <property name="value">
-         <number>3</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>max voice bin</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="spinBox_mse_max_voice_bin">
-        <property name="maximum">
-         <number>999</number>
-        </property>
-        <property name="value">
-         <number>96</number>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>output_moving_snr_estimate_window_size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QSpinBox" name="spinBox_mse_output_moving_snr_estimate_window_size">
-        <property name="maximum">
-         <number>999</number>
-        </property>
-        <property name="value">
-         <number>62</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_3">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>151</width>
-      <height>101</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Status</string>
-    </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLed" name="led_snr">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>40</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>40</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="pixmap">
-        <pixmap resource="../images.qrc">:/images/off_led.svg</pixmap>
-       </property>
-       <property name="scaledContents">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_snr">
-       <property name="text">
-        <string>0dB</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_4">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>300</y>
-      <width>421</width>
-      <height>171</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Delay compensation</string>
-    </property>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>90</x>
-       <y>40</y>
-       <width>321</width>
-       <height>121</height>
-      </rect>
-     </property>
-     <layout class="QFormLayout" name="formLayout_3">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_mne_moving_stats_window_size_2">
-        <property name="text">
-         <string>fft delay size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="spinBox_fft_delay_size">
-        <property name="maximum">
-         <number>999</number>
-        </property>
-        <property name="value">
-         <number>51</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>audio out delayline size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="spinBox_audio_out_delayline_size_in_blocks">
-        <property name="maximum">
-         <number>999</number>
-        </property>
-        <property name="value">
-         <number>62</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>snr estimate delayline size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="spinBox_snr_estimate_delayline_size_in_blocks">
-        <property name="maximum">
-         <number>999</number>
-        </property>
+        <widget class="QWidget" name="layoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>40</y>
+           <width>321</width>
+           <height>121</height>
+          </rect>
+         </property>
+         <layout class="QFormLayout" name="formLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_mne_moving_stats_window_size_2">
+            <property name="text">
+             <string>fft delay size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinBox_fft_delay_size">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>51</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>audio out delayline size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="spinBox_audio_out_delayline_size_in_blocks">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>62</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>snr estimate delayline size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="spinBox_snr_estimate_delayline_size_in_blocks">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
      </layout>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_5">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>240</y>
-      <width>471</width>
-      <height>231</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Other</string>
-    </property>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>40</y>
-       <width>301</width>
-       <height>79</height>
-      </rect>
-     </property>
-     <layout class="QFormLayout" name="formLayout_4">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_mne_moving_stats_window_size_3">
-        <property name="text">
-         <string>snr threshold level db</string>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>475</width>
+          <height>231</height>
+         </size>
         </property>
+        <property name="title">
+         <string>SignalEstimator</string>
+        </property>
+        <widget class="QWidget" name="layoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>451</width>
+           <height>163</height>
+          </rect>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>moving stats window size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinBox_mse_moving_stats_window_size">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>8</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>min voice bin</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="spinBox_mse_min_voice_bin">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>3</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>max voice bin</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="spinBox_mse_max_voice_bin">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>96</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>output_moving_snr_estimate_window_size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="spinBox_mse_output_moving_snr_estimate_window_size">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>62</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_snr_threshold_level_db">
-        <property name="decimals">
-         <number>1</number>
+      <item>
+       <widget class="QGroupBox" name="groupBox_5">
+        <property name="minimumSize">
+         <size>
+          <width>475</width>
+          <height>231</height>
+         </size>
         </property>
-        <property name="minimum">
-         <double>-101.000000000000000</double>
+        <property name="title">
+         <string>Other</string>
         </property>
-        <property name="value">
-         <double>7.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>hysteresis db</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_hysteresis_db">
-        <property name="decimals">
-         <number>1</number>
-        </property>
-        <property name="value">
-         <double>2.000000000000000</double>
-        </property>
+        <widget class="QWidget" name="layoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>40</y>
+           <width>281</width>
+           <height>79</height>
+          </rect>
+         </property>
+         <layout class="QFormLayout" name="formLayout_4">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_mne_moving_stats_window_size_3">
+            <property name="text">
+             <string>snr threshold level db</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_snr_threshold_level_db">
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>-101.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>7.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>hysteresis db</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_hysteresis_db">
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_agc">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>112</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>AGC</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_audiopath">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>180</y>
+           <width>451</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>~/Documents/JSquelch/</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_save_audio">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>90</y>
+           <width>131</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Save audio</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>150</y>
+           <width>451</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Path to save audio</string>
+         </property>
+        </widget>
        </widget>
       </item>
      </layout>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_agc">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>50</y>
-       <width>112</width>
-       <height>32</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>AGC</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_audiopath">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>180</y>
-       <width>451</width>
-       <height>34</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>~/Documents/JSquelch/</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_save_audio">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>90</y>
-       <width>131</width>
-       <height>32</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Save audio</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>150</y>
-       <width>451</width>
-       <height>26</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Path to save audio</string>
-     </property>
-    </widget>
-   </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>922</width>
+     <width>935</width>
      <height>31</height>
     </rect>
    </property>

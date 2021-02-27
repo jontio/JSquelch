@@ -103,6 +103,9 @@ JSquelch::JSquelch(QWidget *parent)
     connect(&audioLoopback,&AudioLoopback::processAudio,this,&JSquelch::processAudio,Qt::DirectConnection);
     applySettings();
     audioLoopback.start();
+
+    resize(minimumWidth(), minimumHeight());
+
 }
 
 void JSquelch::lineEditTextChanged(const QString &text)
@@ -182,7 +185,6 @@ void JSquelch::applySettings()
         ui->checkBox_save_audio->click();
     }
 
-
     //noise estimator
     settings.moving_noise_estimator.moving_stats_window_size=ui->spinBox_mne_moving_stats_window_size->value();
     settings.moving_noise_estimator.moving_minimum_window_size=ui->spinBox_mne_moving_minimum_window_size->value();
@@ -195,7 +197,6 @@ void JSquelch::applySettings()
     settings.moving_signal_estimator.output_moving_voice_snr_estimate_window_size=ui->spinBox_mse_output_moving_snr_estimate_window_size->value();
 
     algo.setSettings(settings);
-
 }
 
 void JSquelch::loadSettings()
@@ -257,15 +258,6 @@ void JSquelch::saveSettings()
 void JSquelch::closeEvent (QCloseEvent *event)
 {
     Q_UNUSED(event);
-//    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "APP_NAME",
-//                                                                tr("Are you sure?\n"),
-//                                                                QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes,
-//                                                                QMessageBox::Yes);
-//    if (resBtn != QMessageBox::Yes) {
-//        event->ignore();
-//    } else {
-//        event->accept();
-//    }
 }
 
 JSquelch::~JSquelch()
