@@ -41,5 +41,8 @@ private:
     CompressAudioDiskWriter audio_disk_writer;
     JDsp::AGC agc;
 
+    void loadSettings();
+    void saveSettings();
+
 };
 #endif // JSQUELCH_H

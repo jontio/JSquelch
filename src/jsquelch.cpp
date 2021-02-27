@@ -10,6 +10,8 @@
 #include <QDir>
 #include <QTimer>
 #include <QDateTime>
+#include <QMessageBox>
+#include <QSettings>
 
 using namespace std;
 
@@ -79,11 +81,7 @@ JSquelch::JSquelch(QWidget *parent)
 {
     ui->setupUi(this);
 
-    CompressAudioDiskWriter::Settings disk_writer_setings=audio_disk_writer.getSettings();
-    disk_writer_setings.filename="delme.ogg";
-    disk_writer_setings.bitRate=8000;
-    disk_writer_setings.nChannels=1;
-    //audio_disk_writer.setSettings(disk_writer_setings);
+    loadSettings();
 
     connect(ui->spinBox_fft_delay_size,SIGNAL(valueChanged(int)),this,SLOT(spinBoxChanged(int)));
     connect(ui->spinBox_mse_max_voice_bin,SIGNAL(valueChanged(int)),this,SLOT(spinBoxChanged(int)));
@@ -178,7 +176,7 @@ void JSquelch::applySettings()
             audio_disk_writer.setSettings(disk_writer_setings);
         }
     }
-    else {qDebug()<<"is not Checked";audio_disk_writer.close();}
+    else audio_disk_writer.close();
     if(audio_disk_writer.isOpen()!=ui->checkBox_save_audio->isChecked())
     {
         ui->checkBox_save_audio->click();
@@ -200,7 +198,62 @@ void JSquelch::applySettings()
 
 }
 
-#include <QMessageBox>
+void JSquelch::loadSettings()
+{
+    QSettings settings("JontiSoft","JSquelch");
+
+    //delay compensation
+    ui->spinBox_fft_delay_size->setValue(settings.value("spinBox_fft_delay_size",51).toInt());
+    ui->spinBox_audio_out_delayline_size_in_blocks->setValue(settings.value("spinBox_audio_out_delayline_size_in_blocks",92).toInt());
+    ui->spinBox_snr_estimate_delayline_size_in_blocks->setValue(settings.value("spinBox_snr_estimate_delayline_size_in_blocks",62).toInt());
+
+    //other
+    ui->doubleSpinBox_hysteresis_db->setValue(settings.value("doubleSpinBox_hysteresis_db",2.0).toDouble());
+    ui->doubleSpinBox_snr_threshold_level_db->setValue(settings.value("doubleSpinBox_snr_threshold_level_db",7.0).toDouble());
+    ui->checkBox_agc->setChecked(settings.value("checkBox_agc",true).toBool());
+    ui->lineEdit_audiopath->setText(settings.value("lineEdit_audiopath","~/Documents/JSquelch/").toString());
+    ui->checkBox_save_audio->setChecked(settings.value("checkBox_save_audio",false).toBool());
+
+    //noise estimator
+    ui->spinBox_mne_moving_stats_window_size->setValue(settings.value("spinBox_mne_moving_stats_window_size",16).toInt());
+    ui->spinBox_mne_moving_minimum_window_size->setValue(settings.value("spinBox_mne_moving_minimum_window_size",16).toInt());
+    ui->spinBox_mne_output_moving_average_window_size->setValue(settings.value("spinBox_mne_output_moving_average_window_size",62).toInt());
+
+    //signal estimator
+    ui->spinBox_mse_max_voice_bin->setValue(settings.value("spinBox_mse_max_voice_bin",96).toInt());
+    ui->spinBox_mse_min_voice_bin->setValue(settings.value("spinBox_mse_min_voice_bin",3).toInt());
+    ui->spinBox_mse_moving_stats_window_size->setValue(settings.value("spinBox_mse_moving_stats_window_size",8).toInt());
+    ui->spinBox_mse_output_moving_snr_estimate_window_size->setValue(settings.value("spinBox_mse_output_moving_snr_estimate_window_size",62).toInt());
+}
+
+void JSquelch::saveSettings()
+{
+    QSettings settings("JontiSoft","JSquelch");
+
+    //delay compensation
+    settings.setValue("spinBox_fft_delay_size",ui->spinBox_fft_delay_size->value());
+    settings.setValue("spinBox_audio_out_delayline_size_in_blocks",ui->spinBox_audio_out_delayline_size_in_blocks->value());
+    settings.setValue("spinBox_snr_estimate_delayline_size_in_blocks",ui->spinBox_snr_estimate_delayline_size_in_blocks->value());
+
+    //other
+    settings.setValue("doubleSpinBox_hysteresis_db",ui->doubleSpinBox_hysteresis_db->value());
+    settings.setValue("doubleSpinBox_snr_threshold_level_db",ui->doubleSpinBox_snr_threshold_level_db->value());
+    settings.setValue("checkBox_agc",ui->checkBox_agc->isChecked());
+    settings.setValue("lineEdit_audiopath",ui->lineEdit_audiopath->text());
+    settings.setValue("checkBox_save_audio",ui->checkBox_save_audio->isChecked());
+
+    //noise estimator
+    settings.setValue("spinBox_mne_moving_stats_window_size",ui->spinBox_mne_moving_stats_window_size->value());
+    settings.setValue("spinBox_mne_moving_minimum_window_size",ui->spinBox_mne_moving_minimum_window_size->value());
+    settings.setValue("spinBox_mne_output_moving_average_window_size",ui->spinBox_mne_output_moving_average_window_size->value());
+
+    //signal estimator
+    settings.setValue("spinBox_mse_max_voice_bin",ui->spinBox_mse_max_voice_bin->value());
+    settings.setValue("spinBox_mse_min_voice_bin",ui->spinBox_mse_min_voice_bin->value());
+    settings.setValue("spinBox_mse_moving_stats_window_size",ui->spinBox_mse_moving_stats_window_size->value());
+    settings.setValue("spinBox_mse_output_moving_snr_estimate_window_size",ui->spinBox_mse_output_moving_snr_estimate_window_size->value());
+}
+
 void JSquelch::closeEvent (QCloseEvent *event)
 {
     Q_UNUSED(event);
@@ -218,6 +271,7 @@ void JSquelch::closeEvent (QCloseEvent *event)
 JSquelch::~JSquelch()
 {
     audioLoopback.stop();
+    saveSettings();
     delete ui;
 }
 
