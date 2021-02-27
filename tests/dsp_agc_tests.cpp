@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QDataStream>
 #include <iostream>
+#include <QDir>
 
 //important for Qt include cpputest last as it mucks up new and causes compiling to fail
 #include "CppUTest/TestHarness.h"
@@ -68,7 +69,11 @@ TEST(Test_DSP_AGC, MatlabCompareTest)
     QVector<double> actual_output=input;
     agc.update(actual_output);
 
+#ifdef GENERATE_TEST_OUTPUT_FILES
+    QDir dir;
+    dir.mkpath(QString(TEST_OUTPUT_PATH));
     File_Utils::Matlab::print((QString(TEST_OUTPUT_PATH)+"/agc_output_signal_from_cpp_include.m").toLocal8Bit().data(),"agc_output_signal_from_cpp",actual_output);
+#endif
 
     int ntests=0;
     int max_buffer_size=qMin(expected_output.size(),actual_output.size());
