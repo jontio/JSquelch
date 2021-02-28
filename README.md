@@ -4,6 +4,8 @@
 
 This application detects voice and other non-continuous audio signals and records them to disk.
 
+![](Screenshot_20210228_154442.png)
+
 The idea was to be able to record HF SSB voice signals only when the voice was present. I have no idea how well it works yet for its purpose but it’s an interesting application.
 
 Initially I was thinking I could use some sort of neural network to solve the problem but in the end I have used more traditional methods. For a writeup see https://jontio.zapto.org/hda1/jsquelch/jsquelch.html 
@@ -62,7 +64,13 @@ VoiceDetectionAlgo is the class that performs the voice detection. The following
     file.open(QIODevice::WriteOnly|QIODevice::Truncate));
     for(int k=0;k<actual_output_signal.size();k++)datastream<<actual_output_signal[k];
     file.close();
-```    
+```
 
-Jonti
+## Building
+
+For Linux on Debianish distros follow the [ci.yml](.github/workflows/ci.yml) workflow file.
+
+For Windows install MSYS2 then install this and that. You don't need to build anything apart from JSquelch as libopusenc is already in the repo that MSYS2 provides (type `pacman -S mingw-w64-x86_64-libopusenc` to install it). Use MinGW Qt flavor. Also for the qmake command I had to add `"INCLUDEPATH += C:/msys64/mingw64/include/opus"` as an option as that was the folder that libopusenc headers went in and that's not what Qt expected.
+
+Jonti <br>
 2021

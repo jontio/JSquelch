@@ -104,6 +104,11 @@ JSquelch::JSquelch(QWidget *parent)
     applySettings();
     audioLoopback.start();
 
+#ifdef WIN32
+    //for some reasion on my windows computer I have to start 2 times else sample rates are wrong
+    audioLoopback.start();
+#endif
+
     resize(minimumWidth(), minimumHeight());
 
 }

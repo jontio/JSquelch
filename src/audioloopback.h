@@ -31,6 +31,7 @@ public:
     void start();
     void stop();
     void setSettings(Settings settings);
+    const Settings &setSettings(){return settings;}
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
 
