@@ -109,6 +109,7 @@ JSquelch::JSquelch(QWidget *parent)
     audioLoopback.start();
 #endif
 
+    setMaximumSize(minimumWidth(), minimumHeight());
     resize(minimumWidth(), minimumHeight());
 
 }
