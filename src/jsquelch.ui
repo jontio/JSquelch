@@ -365,7 +365,7 @@
            <x>180</x>
            <y>40</y>
            <width>281</width>
-           <height>79</height>
+           <height>121</height>
           </rect>
          </property>
          <layout class="QFormLayout" name="formLayout_4">
@@ -403,6 +403,23 @@
             </property>
             <property name="value">
              <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_mne_moving_stats_window_size_4">
+            <property name="text">
+             <string>snr streching</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="spinBox_snr_streching_in_blocks">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+            <property name="value">
+             <number>62</number>
             </property>
            </widget>
           </item>

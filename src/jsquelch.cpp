@@ -40,6 +40,9 @@ void JSquelch::processAudio(const QVector<double> &input, QVector<double> &outpu
             else agc.update(algo,false);
         }
 
+        //streching the snr so it stays on for longer but doesn't strech the update of the AGC
+        algo.snr_db=snr_strech.update(algo.snr_db);
+
         //silence the audio if snr is low
         //using hysteresis
         if(!audio_on_state)
@@ -99,6 +102,7 @@ JSquelch::JSquelch(QWidget *parent)
     connect(ui->checkBox_agc,SIGNAL(stateChanged(int)),this,SLOT(checkBoxStateChange(int)));
     connect(ui->checkBox_save_audio,SIGNAL(stateChanged(int)),this,SLOT(checkBoxStateChange(int)));
     connect(ui->lineEdit_audiopath,SIGNAL(textChanged(const QString &)),this,SLOT(lineEditTextChanged(const QString &)));
+    connect(ui->spinBox_snr_streching_in_blocks,SIGNAL(valueChanged(int)),this,SLOT(spinBoxChanged(int)));
 
     connect(&audioLoopback,&AudioLoopback::processAudio,this,&JSquelch::processAudio,Qt::DirectConnection);
     applySettings();
@@ -151,6 +155,7 @@ void JSquelch::applySettings()
     settings.snr_estimate_delayline_size_in_blocks=ui->spinBox_snr_estimate_delayline_size_in_blocks->value();
 
     //other
+    snr_strech.setSize(ui->spinBox_snr_streching_in_blocks->value());
     hysteresis_db=ui->doubleSpinBox_hysteresis_db->value();
     threshold_level_db=ui->doubleSpinBox_snr_threshold_level_db->value();
     agc_on=ui->checkBox_agc->isChecked();
@@ -220,6 +225,7 @@ void JSquelch::loadSettings()
     ui->checkBox_agc->setChecked(settings.value("checkBox_agc",true).toBool());
     ui->lineEdit_audiopath->setText(settings.value("lineEdit_audiopath","~/Documents/JSquelch/").toString());
     ui->checkBox_save_audio->setChecked(settings.value("checkBox_save_audio",false).toBool());
+    ui->spinBox_snr_streching_in_blocks->setValue(settings.value("spinBox_snr_streching_in_blocks",0).toInt());
 
     //noise estimator
     ui->spinBox_mne_moving_stats_window_size->setValue(settings.value("spinBox_mne_moving_stats_window_size",16).toInt());
@@ -248,6 +254,7 @@ void JSquelch::saveSettings()
     settings.setValue("checkBox_agc",ui->checkBox_agc->isChecked());
     settings.setValue("lineEdit_audiopath",ui->lineEdit_audiopath->text());
     settings.setValue("checkBox_save_audio",ui->checkBox_save_audio->isChecked());
+    settings.setValue("spinBox_snr_streching_in_blocks",ui->spinBox_snr_streching_in_blocks->value());
 
     //noise estimator
     settings.setValue("spinBox_mne_moving_stats_window_size",ui->spinBox_mne_moving_stats_window_size->value());

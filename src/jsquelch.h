@@ -37,6 +37,7 @@ private:
     double threshold_level_db=6;
     bool audio_on_state=false;
     bool agc_on=false;
+    JDsp::MovingMax<double> snr_strech;
 
     CompressAudioDiskWriter audio_disk_writer;
     JDsp::AGC agc;
