@@ -2,34 +2,13 @@
 
 ![CI](https://github.com/jontio/JSquelch/workflows/CI/badge.svg)
 
-Next step of the voice detection code.
+This application detects voice and other non-continuous audio signals and records them to disk.
 
-I have added heaps of classes to the JDsp library, we now have...
+The idea was to be able to record HF SSB voice signals only when the voice was present. I have no idea how well it works yet for its purpose but it’s an interesting application.
 
-```
-Hann
-StrangeSineCorrectionWindow
-VectorDelayLine
-ScalarDelayLine
-VectorMovingAverage
-VectorMovingVariance
-VectorMovingMax
-MovingMax
-VectorMovingMin
-VectorMovingMinWithAssociate
-OverlappedRealFFT
-OverlappedRealFFTDelayLine
-InverseOverlappedRealFFT
-InverseOverlappedRealFFTDelayLine
-MovingNoiseEstimator
-Normalize
-MovingAverage
-MovingSignalEstimator
-```
+Initially I was thinking I could use some sort of neural network to solve the problem but in the end I have used more traditional methods. For a writeup see https://jontio.zapto.org/hda1/jsquelch/jsquelch.html 
 
-I'm not going to explain all of them. There are various operator overloading for ease of use but you don't have to use them if you don't want to. Almost all classes have at least some unit testing code.
-
-I have now added the VoiceDetectionAlgo class. This is going to be the main algorithm class and uses all the classes in the JDsp library to do it's job. VoiceDetectionAlgo doesn't care about the input vector size so can be used for the arbitrary size buffers that come from soundcard drivers. To use it, it goes something like this (I've removed file error checking for easier reading)...
+VoiceDetectionAlgo is the class that performs the voice detection. The following code snippet gives you an example of how to use it…
 
 ```C++
     VoiceDetectionAlgo algo;
@@ -59,8 +38,8 @@ I have now added the VoiceDetectionAlgo class. This is going to be the main algo
         }
         if(file.atEnd())break;
 
-        //add the audio to the algo
-        algo+=x;
+        //send the audio to the algo
+        algo<<x;
 
         //process the audio wile we have some
         while(!algo.process().empty())
@@ -79,10 +58,11 @@ I have now added the VoiceDetectionAlgo class. This is going to be the main algo
     }
     file.close();
 
-
     file.setFileName("audio_out.raw");
     file.open(QIODevice::WriteOnly|QIODevice::Truncate));
     for(int k=0;k<actual_output_signal.size();k++)datastream<<actual_output_signal[k];
     file.close();
 ```    
 
+Jonti
+2021
