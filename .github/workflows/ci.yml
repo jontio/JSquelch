@@ -28,13 +28,31 @@ jobs:
         with:
           repository: jontio/JFFT
           path: JFFT
-
-      # Runs a single command using the runners shell
-      - name: Setup dependencies
-        run: |
-          sudo apt-get install qt5-default cpputest
           
-      # Runs a set of commands using the runners shell
+      # Checks-out libopusenc a needed depenancy
+      - name: Checkout libopusenc repo
+        uses: actions/checkout@v2
+        with:
+          repository: xiph/libopusenc
+          path: libopusenc
+
+      # Setup apt dependencies using the runners shell
+      - name: Setup apt dependencies
+        run: |
+          sudo apt-get install qt5-default cpputest build-essential qtmultimedia5-dev automake libtool libopus-dev libogg-dev libqt5multimedia5-plugins
+          
+      # build and install libopusenc
+      - name: Buils and install libopusenc
+        run: |
+          cd libopusenc
+          ./autogen.sh
+          ./configure
+          make
+          sudo make install
+          sudo ldconfig
+          echo finished installing libopusenc.
+          
+      # Run unit tests
       - name: Run unit tests
         run: |
           cd main
