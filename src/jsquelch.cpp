@@ -106,6 +106,14 @@ JSquelch::JSquelch(QWidget *parent)
 
     connect(&audioLoopback,&AudioLoopback::processAudio,this,&JSquelch::processAudio,Qt::DirectConnection);
     applySettings();
+
+#ifdef WIN32
+    //windows seems to like a bit bigger number of frames per call
+    AudioLoopback::Settings loopbacksettings=audioLoopback.getSettings();
+    loopbacksettings.max_frames_to_play_per_call=160;
+    audioLoopback.setSettings(loopbacksettings);
+#endif
+
     audioLoopback.start();
 
 #ifdef WIN32
