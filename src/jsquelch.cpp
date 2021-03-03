@@ -40,7 +40,7 @@ void JSquelch::processAudio(const QVector<double> &input, QVector<double> &outpu
             else agc.update(algo,false);
         }
 
-        //streching the snr so it stays on for longer but doesn't strech the update of the AGC
+        //streching the snr so it stays on for longer
         algo.snr_db=snr_strech.update(algo.snr_db);
 
         //silence the audio if snr is low

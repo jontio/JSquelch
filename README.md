@@ -8,7 +8,7 @@ This application detects voice and other non-continuous audio signals and record
 
 The idea was to be able to record HF SSB voice signals only when the voice was present. I have no idea how well it works yet for its purpose but it’s an interesting application.
 
-Initially I was thinking I could use some sort of neural network to solve the problem but in the end I have used more traditional methods. For a writeup see https://jontio.zapto.org/hda1/jsquelch/jsquelch.html 
+Initially I was thinking I could use some sort of neural network to solve the problem but in the end I have used more traditional methods. For a writeup see https://jontio.zapto.org/hda1/jsquelch 
 
 VoiceDetectionAlgo is the class that performs the voice detection. The following code snippet gives you an example of how to use it…
 
