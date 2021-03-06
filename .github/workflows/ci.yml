@@ -20,7 +20,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
         with:
-          path: main
+          path: jsquelch
     
       # Checks-out JFFT a needed depenancy
       - name: Checkout FFT repo
@@ -39,23 +39,33 @@ jobs:
       # Setup apt dependencies using the runners shell
       - name: Setup apt dependencies
         run: |
-          sudo apt-get install qt5-default cpputest build-essential qtmultimedia5-dev automake libtool libopus-dev libogg-dev libqt5multimedia5-plugins
+          sudo apt-get install qt5-default cpputest build-essential qtmultimedia5-dev automake libtool libopus-dev libogg-dev libqt5multimedia5-plugins checkinstall -y
           
-      # build and install libopusenc
-      - name: Buils and install libopusenc
+      # build package and install libopusenc-dev
+      - name: Build package and install libopusenc-dev
         run: |
           cd libopusenc
           ./autogen.sh
           ./configure
           make
-          sudo make install
+          sudo checkinstall \
+            --pkgsource="https://github.com/xiph/libopusenc" \
+            --pkglicense="BSD" \
+            --maintainer="jontio@i4free.co.nz" \
+            --pkgversion="0.2.1-8-g427d611" \
+            --pkgrelease="1" \
+            --pkgname=libopusenc-dev \
+            --provides=libopusenc-dev \
+            --summary="Library for encoding .opus audio files and live streams." \
+            --requires="libopus-dev \(\>=1.3\), libogg-dev \(\>=1.3\)" \
+            -y
           sudo ldconfig
-          echo finished installing libopusenc.
+          echo finished installing libopusenc-dev.
           
       # Run unit tests
       - name: Run unit tests
         run: |
-          cd main
+          cd jsquelch
           qmake CONFIG+=CI
           make
           ./jsquelch -v
@@ -64,16 +74,27 @@ jobs:
       # Build application
       - name: Build application
         run: |
-          cd main
-          make clean
+          cd jsquelch
           qmake CONFIG-=CI
           make
           echo finished build.
+    
+      # Package application
+      - name: Package application for DEB
+        run: |
+          cd jsquelch
+          mkdir jsquelch_1.0-1
+          mkdir -p jsquelch_1.0-1/usr/local/bin
+          cp jsquelch jsquelch_1.0-1/usr/local/bin
+          mkdir -p jsquelch_1.0-1/DEBIAN
+          cp control jsquelch_1.0-1/DEBIAN
+          dpkg-deb --build jsquelch_1.0-1
           
       # upload artifact    
-      - name: Upload build
+      - name: Upload DEB packages
         uses: actions/upload-artifact@v2
         with:
-          name: build.zip
+          name: jsquelch_deb_packages.zip
           path: |
-            main/jsquelch
+            jsquelch/jsquelch_1.0-1.deb
+            libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb
