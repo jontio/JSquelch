@@ -106,9 +106,9 @@ jobs:
           echo 'sudo apt remove jsquelch libopusenc-dev -y' >> uninstall.sh
           chmod +x install.sh
           chmod +x uninstall.sh
-          echo 'This has been built and packaged by Github actions.' >readme
-          echo 'these packages are for debian based Linux and are executable code.' > readme
-          echo 'these packages have only been tested on kubuntu 20.04 and ubuntu 20.04' > readme
+          echo 'This has been built and packaged by Github actions.' > readme
+          echo 'these packages are for debian based Linux and are executable code.' >> readme
+          echo 'these packages have only been tested on kubuntu 20.04 and ubuntu 20.04' >> readme
           echo '' >> readme
           echo 'install and uninstall are examples as how to install and uninstall.' >> readme
           echo 'if you want to use them then type "./install.sh" in this folder to install jsquelch.' >> readme
