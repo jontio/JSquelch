@@ -89,12 +89,20 @@ jobs:
           mkdir -p jsquelch_1.0-1/DEBIAN
           cp control jsquelch_1.0-1/DEBIAN
           dpkg-deb --build jsquelch_1.0-1
+          echo '#!/bin/bash' > install.sh
+          echo 'sudo apt install ./jsquelch_1.0-1.deb ../libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb' >> install.sh
+          echo '#!/bin/bash' > uninstall.sh
+          echo 'sudo apt remove jsquelch libopusenc-dev' >> uninstall.sh
+          sudo chmod +x install.sh
+          sudo chmod +x uninstall.sh
           
       # upload artifact    
       - name: Upload DEB packages
         uses: actions/upload-artifact@v2
         with:
-          name: jsquelch_deb_packages.zip
+          name: jsquelch_deb_packages
           path: |
+            jsquelch/install.sh
+            jsquelch/uninstall.sh
             jsquelch/jsquelch_1.0-1.deb
             libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb
