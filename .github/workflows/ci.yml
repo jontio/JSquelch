@@ -90,11 +90,18 @@ jobs:
           cp control jsquelch_1.0-1/DEBIAN
           dpkg-deb --build jsquelch_1.0-1
           echo '#!/bin/bash' > install.sh
-          echo 'sudo apt install ./jsquelch_1.0-1.deb ../libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb' >> install.sh
+          echo 'sudo apt install ./jsquelch_1.0-1.deb ../libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb -y' >> install.sh
           echo '#!/bin/bash' > uninstall.sh
-          echo 'sudo apt remove jsquelch libopusenc-dev' >> uninstall.sh
-          sudo chmod +x install.sh
-          sudo chmod +x uninstall.sh
+          echo 'sudo apt remove jsquelch libopusenc-dev -y' >> uninstall.sh
+          chmod +x install.sh
+          chmod +x uninstall.sh
+          echo 'these packages have only been tested on kubuntu 20.04.' > readme
+          echo '' >> readme
+          echo 'install and uninstall are examples as how to install and uninstall.' >> readme
+          echo 'if you want to use them then type "chmod +x *.sh" in this folder to make them executable.' >> readme
+          echo 'then "./install.sh" in this folder to install jsquelch.' >> readme
+          echo '' >> readme
+          echo 'once installed type "jsquelch" to run jsquelch' >> readme
           
       # upload artifact    
       - name: Upload DEB packages
