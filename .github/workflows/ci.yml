@@ -80,7 +80,7 @@ jobs:
           echo finished build.
     
       # Package application
-      - name: Package application for DEB
+      - name: Package application
         run: |
           cd jsquelch
           echo 'Maintainer: ${{ secrets.EMAIL }}' >> control
@@ -91,37 +91,46 @@ jobs:
           mkdir -p jsquelch_1.0-1/DEBIAN
           cp control jsquelch_1.0-1/DEBIAN
           dpkg-deb --build jsquelch_1.0-1
+          
+      # Compress packages
+      - name: Compress packages with extras
+        run: |
+          mkdir tmp
+          mkdir tmp/jsquelch
+          mkdir tmp/libopusenc-dev
+          cp jsquelch/jsquelch_1.0-1.deb tmp/jsquelch/
+          cp libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb tmp/libopusenc-dev/
+          cd tmp
           echo '#!/bin/bash' > install.sh
-          echo 'sudo apt install ./jsquelch_1.0-1.deb ../libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb -y' >> install.sh
+          echo 'sudo apt install ./jsquelch_1.0-1.deb ./libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb -y' >> install.sh
           echo '#!/bin/bash' > uninstall.sh
           echo 'sudo apt remove jsquelch libopusenc-dev -y' >> uninstall.sh
           chmod +x install.sh
           chmod +x uninstall.sh
+          echo 'This has been built and packaged by Github actions.' >readme
+          echo 'these packages are for debian based Linux and are executable code.' > readme
           echo 'these packages have only been tested on kubuntu 20.04 and ubuntu 20.04' > readme
           echo '' >> readme
           echo 'install and uninstall are examples as how to install and uninstall.' >> readme
-          echo 'if you want to use them then type "chmod +x *.sh" in this folder to make them executable.' >> readme
-          echo 'then "./install.sh" in this folder to install jsquelch.' >> readme
+          echo 'if you want to use them then type "./install.sh" in this folder to install jsquelch.' >> readme
           echo '' >> readme
           echo 'once installed type "jsquelch" to run jsquelch' >> readme
+          tar -czvf jsquelch.tar.gz jsquelch libopusenc-dev readme install.sh uninstall.sh
           
       # upload artifact    
-      - name: Upload DEB packages
+      - name: Upload binary artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: jsquelch_deb_packages
+          name: jsquelch_deb_binaries
           path: |
-            jsquelch/readme
-            jsquelch/install.sh
-            jsquelch/uninstall.sh
-            jsquelch/jsquelch_1.0-1.deb
-            libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb
-    
-      # Create a release
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+            tmp/jsquelch.tar.gz
+            
+      # Create a release      
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          files: jsquelch_deb_packages.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            tmp/jsquelch.tar.gz
