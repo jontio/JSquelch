@@ -12,8 +12,13 @@ jobs:
       # ...
       - name: "Build & test"
         run: |
+          mkdir tmp
+          cd tmp
+          mkdir jsquelch
+          mkdir libopusenc-dev
           echo ${{ github.sha }} > Release.txt
-          echo 'test' > Release2.txt
+          echo 'test' > jsquelch/Release2.txt
+          tar -czvf file.tar.gz jsquelch libopusenc-dev Release.txt
           echo "done!"
           
 
@@ -24,5 +29,4 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: |
-            Release.txt
-            Release2.txt
+            tmp/file.tar.gz
