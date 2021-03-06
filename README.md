@@ -68,7 +68,7 @@ VoiceDetectionAlgo is the class that performs the voice detection. The following
 
 ## Building
 
-For Linux on Debianish distros follow the [ci.yml](.github/workflows/ci.yml) workflow file.
+For Linux on Debianish distros follow the [ci.yml](.github/workflows/ci.yml) workflow file. The CI workflow automatically creates new releases for successful builds on `ubuntu-latest` GitHub VMs. See [here](releases/tag/latest) for latest successful `ubuntu-latest` build. For some reason libopusenc-dev is not available in ubuntu repos so the CI workflow also creates a deb package for libopusenc-dev too.
 
 For Windows install MSYS2 then install this and that. You don't need to build anything apart from JSquelch as libopusenc is already in the repo that MSYS2 provides (type `pacman -S mingw-w64-x86_64-libopusenc` to install it). Use MinGW Qt flavor. Also for the qmake command I had to add `"INCLUDEPATH += C:/msys64/mingw64/include/opus"` as an option as that was the folder that libopusenc headers went in and that's not what Qt expected.
 
