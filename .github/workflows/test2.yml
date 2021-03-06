@@ -1,4 +1,4 @@
-name: Release test2
+name: how now
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ jobs:
           mkdir jsquelch
           mkdir libopusenc-dev
           echo ${{ github.sha }} > Release.txt
-          echo 'test' > jsquelch/Release2.txt
+          echo 'west' > jsquelch/Release2.txt
           tar -czvf file.tar.gz jsquelch libopusenc-dev Release.txt
           echo "done!"
           
