@@ -95,7 +95,7 @@ jobs:
           echo 'sudo apt remove jsquelch libopusenc-dev -y' >> uninstall.sh
           chmod +x install.sh
           chmod +x uninstall.sh
-          echo 'these packages have only been tested on kubuntu 20.04.' > readme
+          echo 'these packages have only been tested on kubuntu 20.04 and ubuntu 20.04' > readme
           echo '' >> readme
           echo 'install and uninstall are examples as how to install and uninstall.' >> readme
           echo 'if you want to use them then type "chmod +x *.sh" in this folder to make them executable.' >> readme
@@ -109,6 +109,7 @@ jobs:
         with:
           name: jsquelch_deb_packages
           path: |
+            jsquelch/readme
             jsquelch/install.sh
             jsquelch/uninstall.sh
             jsquelch/jsquelch_1.0-1.deb
