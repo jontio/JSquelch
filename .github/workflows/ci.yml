@@ -97,10 +97,9 @@ jobs:
         run: |
           mkdir tmp
           mkdir tmp/jsquelch
-          mkdir tmp/libopusenc-dev
           cp jsquelch/jsquelch_1.0-1.deb tmp/jsquelch/
-          cp libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb tmp/libopusenc-dev/
-          cd tmp
+          cp libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb tmp/jsquelch/
+          cd tmp/jsquelch
           echo '#!/bin/bash' > install.sh
           echo 'sudo apt install ./jsquelch_1.0-1.deb ./libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb -y' >> install.sh
           echo '#!/bin/bash' > uninstall.sh
@@ -115,7 +114,8 @@ jobs:
           echo 'if you want to use them then type "./install.sh" in this folder to install jsquelch.' >> readme
           echo '' >> readme
           echo 'once installed type "jsquelch" to run jsquelch' >> readme
-          tar -czvf jsquelch.tar.gz jsquelch libopusenc-dev readme install.sh uninstall.sh
+          cd ..
+          tar -czvf jsquelch.tar.gz jsquelch
           
       # upload artifact    
       - name: Upload binary artifacts
