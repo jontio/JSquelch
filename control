@@ -4,7 +4,6 @@ Section: base
 Priority: extra
 Architecture: amd64
 Depends: libopusenc-dev (>= 0.2), libqt5multimedia5-plugins (>= 5.12), qt5-default (>= 5.12)
-Maintainer: jontio@i4free.co.nz
 Provides: jsquelch
 Description: A program for recording audio to disk when voice is present
  jsquelch 
