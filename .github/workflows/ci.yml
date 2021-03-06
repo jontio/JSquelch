@@ -43,8 +43,6 @@ jobs:
           
       # build package and install libopusenc-dev
       - name: Build package and install libopusenc-dev
-        env:
-            EMAIL: ${{ secrets.EMAIL }}
         run: |
           cd libopusenc
           ./autogen.sh
@@ -53,7 +51,7 @@ jobs:
           sudo checkinstall \
             --pkgsource="https://github.com/xiph/libopusenc" \
             --pkglicense="BSD" \
-            --maintainer="$EMAIL" \
+            --maintainer="${{ secrets.EMAIL }}" \
             --pkgversion="0.2.1-8-g427d611" \
             --pkgrelease="1" \
             --pkgname=libopusenc-dev \
@@ -85,7 +83,8 @@ jobs:
       - name: Package application for DEB
         run: |
           cd jsquelch
-          echo "Maintainer: $EMAIL" >> control
+          echo 'Maintainer: ${{ secrets.EMAIL }}' >> control
+          echo "" >> control
           mkdir jsquelch_1.0-1
           mkdir -p jsquelch_1.0-1/usr/local/bin
           cp jsquelch jsquelch_1.0-1/usr/local/bin
