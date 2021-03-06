@@ -116,3 +116,12 @@ jobs:
             jsquelch/uninstall.sh
             jsquelch/jsquelch_1.0-1.deb
             libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb
+    
+      # Create a release
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: jsquelch_deb_packages.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
