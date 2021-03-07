@@ -48,7 +48,7 @@ jobs:
           git fetch --prune --unshallow --tags
           git status > /dev/null 2>&1
           LIBOPUSENC_PACKAGE_VERSION=$(git describe --tags --match 'v*' --dirty 2> /dev/null | tr -d v)
-          echo 'libopusenc LIBOPUSENC_PACKAGE_VERSION='$LIBOPUSENC_PACKAGE_VERSION
+          echo 'LIBOPUSENC_PACKAGE_VERSION='$LIBOPUSENC_PACKAGE_VERSION
           ./autogen.sh
           ./configure
           make
@@ -102,7 +102,7 @@ jobs:
           echo 'echo $pkgversion' >> get_pkg_version.sh
           chmod +x get_pkg_version.sh
           JSQUELCH_PACKAGE_VERSION=$(./get_pkg_version.sh | tr -d v)
-          echo 'libopusenc JSQUELCH_PACKAGE_VERSION='$JSQUELCH_PACKAGE_VERSION
+          echo 'JSQUELCH_PACKAGE_VERSION='$JSQUELCH_PACKAGE_VERSION
           echo 'Maintainer: ${{ secrets.EMAIL }}' >> control
           echo 'Version: '$JSQUELCH_PACKAGE_VERSION-1'' >> control
           echo "" >> control
@@ -131,7 +131,8 @@ jobs:
           echo 'sudo apt remove jsquelch libopusenc-dev -y' >> uninstall.sh
           chmod +x install.sh
           chmod +x uninstall.sh
-          echo 'This has been built and packaged by Github actions.' > readme
+          echo 'Version: v'$JSQUELCH_PACKAGE_VERSION' Build Date:'$(date)
+          echo 'This has been built and packaged by Github actions.' >> readme
           echo 'these packages are for debian based Linux and are executable code.' >> readme
           echo 'these packages have only been tested on kubuntu 20.04 and ubuntu 20.04' >> readme
           echo '' >> readme
