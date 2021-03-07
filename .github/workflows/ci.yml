@@ -47,9 +47,9 @@ jobs:
           cd libopusenc
           ./autogen.sh
           ./configure
+          make
           LIBOPUSENC_PACKAGE_VERSION=$(awk '/PACKAGE_VERSION/{print $NF}' config.h | tr -d \' | tr -d \" | tr -d v)
           echo 'libopusenc LIBOPUSENC_PACKAGE_VERSION='$LIBOPUSENC_PACKAGE_VERSION
-          make
           sudo checkinstall \
             --pkgsource="https://github.com/xiph/libopusenc" \
             --pkglicense="BSD" \
