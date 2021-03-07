@@ -48,7 +48,7 @@ jobs:
           ./autogen.sh
           ./configure
           LIBOPUSENC_PACKAGE_VERSION=$(awk '/PACKAGE_VERSION/{print $NF}' config.h | tr -d \' | tr -d \" | tr -d v)
-          echo 'libopusenc LIBOPUSENC_PACKAGE_VERSION='$LIBOPUSENC_PACKAGE_VERSION'
+          echo 'libopusenc LIBOPUSENC_PACKAGE_VERSION='$LIBOPUSENC_PACKAGE_VERSION
           make
           sudo checkinstall \
             --pkgsource="https://github.com/xiph/libopusenc" \
@@ -81,7 +81,7 @@ jobs:
           make
           echo finished build.
     
-      # Package application starting with 
+      # Package application starting with v1.0 
       - name: Package application
         run: |
           cd jsquelch
