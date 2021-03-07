@@ -113,7 +113,9 @@ jobs:
       # Compress packages
       - name: Compress packages with extras
         run: |
-          JSQUELCH_PACKAGE_VERSION=$(./jsquelch/get_pkg_version.sh | tr -d v)
+          cd jsquelch
+          JSQUELCH_PACKAGE_VERSION=$(.get_pkg_version.sh | tr -d v)
+          cd ..
           LIBOPUSENC_PACKAGE_VERSION=$(awk '/PACKAGE_VERSION/{print $NF}' libopusenc/config.h | tr -d \' | tr -d \" | tr -d v)
           mkdir tmp
           mkdir tmp/jsquelch
