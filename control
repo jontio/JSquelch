@@ -1,7 +1,6 @@
 Package: jsquelch
 Section: base
 Priority: extra
-Architecture: amd64
 Depends: libopusenc-dev (>= 0.2), libqt5multimedia5-plugins (>= 5.12), qt5-default (>= 5.12)
 Provides: jsquelch
 Description: A program for recording audio to disk when voice is present
