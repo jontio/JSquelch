@@ -47,12 +47,14 @@ jobs:
           cd libopusenc
           ./autogen.sh
           ./configure
+          LIBOPUSENC_PACKAGE_VERSION=$(awk '/PACKAGE_VERSION/{print $NF}' config.h | tr -d \' | tr -d \" | tr -d v)
+          echo 'libopusenc LIBOPUSENC_PACKAGE_VERSION='$LIBOPUSENC_PACKAGE_VERSION'
           make
           sudo checkinstall \
             --pkgsource="https://github.com/xiph/libopusenc" \
             --pkglicense="BSD" \
             --maintainer="${{ secrets.EMAIL }}" \
-            --pkgversion="0.2.1-8-g427d611" \
+            --pkgversion="$LIBOPUSENC_PACKAGE_VERSION" \
             --pkgrelease="1" \
             --pkgname=libopusenc-dev \
             --provides=libopusenc-dev \
@@ -79,29 +81,47 @@ jobs:
           make
           echo finished build.
     
-      # Package application
+      # Package application starting with 
       - name: Package application
         run: |
           cd jsquelch
+          echo '#!/bin/bash' > get_pkg_version.sh
+          echo "INITIAL_PKGVERSION='v1.0'" >> get_pkg_version.sh
+          echo 'git status > /dev/null 2>&1' >> get_pkg_version.sh
+          echo 'last_release_version=$(git describe --tags --match 'v*' --dirty 2>/dev/null)' >> get_pkg_version.sh
+          echo 'found_last_release_version=$?' >> get_pkg_version.sh
+          echo 'if [ $found_last_release_version -eq 0 ]' >> get_pkg_version.sh
+          echo 'then' >> get_pkg_version.sh
+          echo '    pkgversion=$last_release_version' >> get_pkg_version.sh
+          echo 'else' >> get_pkg_version.sh
+          echo '    pkgversion=$INITIAL_PKGVERSION-g$(git rev-parse HEAD | cut -c 1-8)' >> get_pkg_version.sh
+          echo 'fi' >> get_pkg_version.sh
+          echo 'echo $pkgversion' >> get_pkg_version.sh
+          chmod +x get_pkg_version.sh
+          JSQUELCH_PACKAGE_VERSION=$(./get_pkg_version.sh | tr -d v)
+          echo 'libopusenc JSQUELCH_PACKAGE_VERSION='$JSQUELCH_PACKAGE_VERSION
           echo 'Maintainer: ${{ secrets.EMAIL }}' >> control
+          echo 'Version: '$JSQUELCH_PACKAGE_VERSION-1'' >> control
           echo "" >> control
-          mkdir jsquelch_1.0-1
-          mkdir -p jsquelch_1.0-1/usr/local/bin
-          cp jsquelch jsquelch_1.0-1/usr/local/bin
-          mkdir -p jsquelch_1.0-1/DEBIAN
-          cp control jsquelch_1.0-1/DEBIAN
-          dpkg-deb --build jsquelch_1.0-1
+          mkdir jsquelch_$JSQUELCH_PACKAGE_VERSION-1
+          mkdir -p jsquelch_$JSQUELCH_PACKAGE_VERSION-1/usr/local/bin
+          cp jsquelch jsquelch_$JSQUELCH_PACKAGE_VERSION-1/usr/local/bin
+          mkdir -p jsquelch_$JSQUELCH_PACKAGE_VERSION-1/DEBIAN
+          cp control jsquelch_$JSQUELCH_PACKAGE_VERSION-1/DEBIAN
+          dpkg-deb --build jsquelch_$JSQUELCH_PACKAGE_VERSION-1
           
       # Compress packages
       - name: Compress packages with extras
         run: |
+          JSQUELCH_PACKAGE_VERSION=$(./jsquelch/get_pkg_version.sh | tr -d v)
+          LIBOPUSENC_PACKAGE_VERSION=$(awk '/PACKAGE_VERSION/{print $NF}' libopusenc/config.h | tr -d \' | tr -d \" | tr -d v)
           mkdir tmp
           mkdir tmp/jsquelch
-          cp jsquelch/jsquelch_1.0-1.deb tmp/jsquelch/
-          cp libopusenc/libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb tmp/jsquelch/
+          cp jsquelch/jsquelch_$JSQUELCH_PACKAGE_VERSION-1.deb tmp/jsquelch/
+          cp libopusenc/libopusenc-dev_$LIBOPUSENC_PACKAGE_VERSION-1_amd64.deb tmp/jsquelch/
           cd tmp/jsquelch
           echo '#!/bin/bash' > install.sh
-          echo 'sudo apt install ./jsquelch_1.0-1.deb ./libopusenc-dev_0.2.1-8-g427d611-1_amd64.deb -y' >> install.sh
+          echo 'sudo apt install ./jsquelch_'$JSQUELCH_PACKAGE_VERSION'-1.deb ./libopusenc-dev_'$LIBOPUSENC_PACKAGE_VERSION'-1_amd64.deb -y' >> install.sh
           echo '#!/bin/bash' > uninstall.sh
           echo 'sudo apt remove jsquelch libopusenc-dev -y' >> uninstall.sh
           chmod +x install.sh
