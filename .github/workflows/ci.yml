@@ -45,11 +45,13 @@ jobs:
       - name: Build package and install libopusenc-dev
         run: |
           cd libopusenc
+          git fetch --prune --unshallow --tags
+          git status > /dev/null 2>&1
+          LIBOPUSENC_PACKAGE_VERSION=$(git describe --tags --match 'v*' --dirty 2> /dev/null | tr -d v)
+          echo 'libopusenc LIBOPUSENC_PACKAGE_VERSION='$LIBOPUSENC_PACKAGE_VERSION
           ./autogen.sh
           ./configure
           make
-          LIBOPUSENC_PACKAGE_VERSION=$(awk '/PACKAGE_VERSION/{print $NF}' config.h | tr -d \' | tr -d \" | tr -d v)
-          echo 'libopusenc LIBOPUSENC_PACKAGE_VERSION='$LIBOPUSENC_PACKAGE_VERSION
           sudo checkinstall \
             --pkgsource="https://github.com/xiph/libopusenc" \
             --pkglicense="BSD" \
@@ -85,6 +87,7 @@ jobs:
       - name: Package application
         run: |
           cd jsquelch
+          git fetch --prune --unshallow --tags
           echo '#!/bin/bash' > get_pkg_version.sh
           echo "INITIAL_PKGVERSION='v1.0'" >> get_pkg_version.sh
           echo 'git status > /dev/null 2>&1' >> get_pkg_version.sh
@@ -114,7 +117,7 @@ jobs:
       - name: Compress packages with extras
         run: |
           cd jsquelch
-          JSQUELCH_PACKAGE_VERSION=$(.get_pkg_version.sh | tr -d v)
+          JSQUELCH_PACKAGE_VERSION=$(./get_pkg_version.sh | tr -d v)
           cd ..
           LIBOPUSENC_PACKAGE_VERSION=$(awk '/PACKAGE_VERSION/{print $NF}' libopusenc/config.h | tr -d \' | tr -d \" | tr -d v)
           mkdir tmp
