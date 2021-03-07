@@ -148,8 +148,10 @@ jobs:
           cd ..
           ls
           FINAL_COMPRESSED_PACKAGE_FILENAME=${JSQUELCH_PACKAGE_FILENAME%.*}.tar.gz
+          echo 'FINAL_COMPRESSED_PACKAGE_FILENAME='$FINAL_COMPRESSED_PACKAGE_FILENAME
           echo starting compressing
-          tar -czvf $FINAL_COMPRESSED_PACKAGE_FILENAME.tar.gz jsquelch
+          tar -czvf jsquelch.tar.gz jsquelch
+          mv jsquelch.tar.gz $FINAL_COMPRESSED_PACKAGE_FILENAME
           echo compressing done
           
       # upload artifact    
