@@ -146,7 +146,10 @@ jobs:
           echo '' >> readme
           echo 'once installed type "jsquelch" to run jsquelch' >> readme
           cd ..
-          tar -czvf ''${JSQUELCH_PACKAGE_FILENAME%.*}''.tar.gz jsquelch
+          FINAL_COMPRESSED_PACKAGE_FILENAME=${JSQUELCH_PACKAGE_FILENAME%.*}.tar.gz
+          echo starting compressing
+          tar -czvf $FINAL_COMPRESSED_PACKAGE_FILENAME.tar.gz jsquelch
+          echo compressing done
           
       # upload artifact    
       - name: Upload binary artifacts
