@@ -133,7 +133,8 @@ jobs:
           echo '#!/bin/bash' > install.sh
           echo 'sudo apt install ./'$JSQUELCH_PACKAGE_FILENAME' ./'$LIBOPUSENC_PACKAGE_FILENAME' -y' >> install.sh
           echo '#!/bin/bash' > uninstall.sh
-          echo 'sudo apt remove jsquelch libopusenc-dev -y' >> uninstall.sh
+          echo 'sudo dpkg --remove jsquelch libopusenc-dev' >> uninstall.sh
+          echo 'sudo ldconfig' >> uninstall.sh
           chmod +x install.sh
           chmod +x uninstall.sh
           echo 'OS: '$(lsb_release -d | cut -f 2) > readme
