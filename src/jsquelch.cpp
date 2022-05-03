@@ -84,6 +84,11 @@ JSquelch::JSquelch(QWidget *parent)
 {
     ui->setupUi(this);
 
+    foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
+    {
+        ui->soundcard_input->addItem(deviceInfo.deviceName());
+    }
+
     loadSettings();
 
     connect(ui->spinBox_fft_delay_size,SIGNAL(valueChanged(int)),this,SLOT(spinBoxChanged(int)));
@@ -234,6 +239,7 @@ void JSquelch::loadSettings()
     ui->lineEdit_audiopath->setText(settings.value("lineEdit_audiopath","~/Documents/JSquelch/").toString());
     ui->checkBox_save_audio->setChecked(settings.value("checkBox_save_audio",false).toBool());
     ui->spinBox_snr_streching_in_blocks->setValue(settings.value("spinBox_snr_streching_in_blocks",0).toInt());
+    ui->soundcard_input->setCurrentText(settings.value("soundcard_input").toString());
 
     //noise estimator
     ui->spinBox_mne_moving_stats_window_size->setValue(settings.value("spinBox_mne_moving_stats_window_size",16).toInt());
@@ -263,6 +269,7 @@ void JSquelch::saveSettings()
     settings.setValue("lineEdit_audiopath",ui->lineEdit_audiopath->text());
     settings.setValue("checkBox_save_audio",ui->checkBox_save_audio->isChecked());
     settings.setValue("spinBox_snr_streching_in_blocks",ui->spinBox_snr_streching_in_blocks->value());
+    settings.setValue("soundcard_input",ui->soundcard_input->currentText());
 
     //noise estimator
     settings.setValue("spinBox_mne_moving_stats_window_size",ui->spinBox_mne_moving_stats_window_size->value());
@@ -288,3 +295,17 @@ JSquelch::~JSquelch()
     delete ui;
 }
 
+void JSquelch::on_soundcard_input_currentIndexChanged(const QString &deviceName)
+{
+    foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
+    {
+        if(deviceInfo.deviceName()==deviceName)
+        {
+            AudioLoopback::Settings loopbacksettings=audioLoopback.getSettings();
+            loopbacksettings.audio_device_in=deviceInfo;
+            audioLoopback.setSettings(loopbacksettings);
+            audioLoopback.start();
+            break;
+        }
+    }
+}

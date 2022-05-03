@@ -31,6 +31,9 @@ public slots:
     void lineEditTextChanged(const QString &text);
 protected:
     void closeEvent (QCloseEvent *event);
+private slots:
+    void on_soundcard_input_currentIndexChanged(const QString &deviceName);
+
 private:
     Ui::JSquelch *ui;
     double hysteresis_db=2;

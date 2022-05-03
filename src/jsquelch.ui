@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>935</width>
-    <height>555</height>
+    <width>936</width>
+    <height>559</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -15,6 +15,12 @@
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>936</width>
+    <height>559</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>JSquelch</string>
@@ -26,7 +32,7 @@
      <height>493</height>
     </size>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="9,10">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout" stretch="0,10,10">
       <item>
@@ -254,13 +260,13 @@
      </layout>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,10">
       <item>
        <widget class="QGroupBox" name="groupBox_2">
         <property name="minimumSize">
          <size>
           <width>475</width>
-          <height>231</height>
+          <height>181</height>
          </size>
         </property>
         <property name="title">
@@ -270,9 +276,9 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>40</y>
+           <y>30</y>
            <width>451</width>
-           <height>163</height>
+           <height>131</height>
           </rect>
          </property>
          <layout class="QFormLayout" name="formLayout_2">
@@ -363,9 +369,9 @@
          <property name="geometry">
           <rect>
            <x>180</x>
-           <y>40</y>
+           <y>100</y>
            <width>281</width>
-           <height>121</height>
+           <height>91</height>
           </rect>
          </property>
          <layout class="QFormLayout" name="formLayout_4">
@@ -429,7 +435,7 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>50</y>
+           <y>110</y>
            <width>112</width>
            <height>32</height>
           </rect>
@@ -442,7 +448,7 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>180</y>
+           <y>230</y>
            <width>451</width>
            <height>34</height>
           </rect>
@@ -455,7 +461,7 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>90</y>
+           <y>150</y>
            <width>131</width>
            <height>32</height>
           </rect>
@@ -468,13 +474,36 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>150</y>
+           <y>200</y>
            <width>451</width>
            <height>26</height>
           </rect>
          </property>
          <property name="text">
           <string>Path to save audio</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="soundcard_input">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>451</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_11">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>101</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Input soundcard</string>
          </property>
         </widget>
        </widget>
@@ -488,8 +517,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>935</width>
-     <height>31</height>
+     <width>936</width>
+     <height>26</height>
     </rect>
    </property>
   </widget>
