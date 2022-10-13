@@ -5,6 +5,7 @@
 #include <QAudioInput>
 #include <QAudioOutput>
 #include <QVector>
+#include <QTimer>
 
 class AudioLoopback : public QIODevice
 {
@@ -38,6 +39,8 @@ public:
 signals:
     void processAudio(const QVector<double> &input, QVector<double> &output);
 public slots:
+private slots:
+    void onAudioErrorTimer();
 private:
     Settings settings;
     QAudioFormat m_format;
@@ -51,6 +54,9 @@ private:
     void clear();
     QVector<double> m_processAudio_input;
     QVector<double> m_processAudio_output;
+
+    //for error checking
+    QTimer *errorTimer;
 };
 
 #endif // AUDIOLOOPBACK_H

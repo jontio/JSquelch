@@ -10,8 +10,10 @@ AudioLoopback::AudioLoopback(QObject *parent) :
     m_audioInput(NULL),
     m_audioOutput(NULL)
 {
-  setSettings(settings);
-  clear();
+    errorTimer=new QTimer(this);
+    connect(errorTimer,SIGNAL(timeout()),this,SLOT(onAudioErrorTimer()));
+    setSettings(settings);
+    clear();
 }
 
 void AudioLoopback::clear()
@@ -28,10 +30,12 @@ void AudioLoopback::start()
     open(QIODevice::ReadWrite);
     if(m_audioInput)m_audioInput->start(this);
     if(m_audioOutput)m_audioOutput->start(this);
+    errorTimer->start(100);
 }
 
 void AudioLoopback::stop()
 {
+    errorTimer->stop();
     if(m_audioInput)m_audioInput->stop();
     if(m_audioOutput)m_audioOutput->stop();
     close();
@@ -209,6 +213,7 @@ qint64 AudioLoopback::readData(char *data, qint64 maxlen)
 //for audio in
 qint64 AudioLoopback::writeData(const char *data, qint64 len)
 {
+
 #ifdef TESTING_AUDIOLOOPBACK
     static int counter=0;
     counter++;counter%=2000;//2000->500ppm 1000->1000ppm, 500->2000ppm etc
@@ -297,4 +302,28 @@ qint64 AudioLoopback::writeData(const char *data, qint64 len)
 
 #endif
 
+}
+
+//for error testing and restarting if something goes wrong
+//this catches when RDP server kills the audio input device
+void AudioLoopback::onAudioErrorTimer()
+{
+    if(m_audioInput)
+    {
+        QAudio::Error error=m_audioInput->error();
+        if(error!=QAudio::NoError)
+        {
+            qDebug()<<"Audio input error trying to start input again";
+            start();
+        }
+    }
+    if(m_audioOutput)
+    {
+        QAudio::Error error=m_audioOutput->error();
+        if(error!=QAudio::NoError)
+        {
+            qDebug()<<"Audio output error trying to start output again";
+            start();
+        }
+    }
 }
