@@ -484,7 +484,7 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>150</y>
+           <y>140</y>
            <width>131</width>
            <height>32</height>
           </rect>
@@ -527,6 +527,19 @@
          </property>
          <property name="text">
           <string>Input soundcard</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_split_audio_files">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>170</y>
+           <width>131</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Split audio files</string>
          </property>
         </widget>
        </widget>

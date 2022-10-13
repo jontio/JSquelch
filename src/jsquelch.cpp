@@ -73,8 +73,8 @@ void JSquelch::processAudio(const QVector<double> &input, QVector<double> &outpu
     //record audio if wanted
     if(audio_on_state)
     {
-        //if there was an audio pause
-        if(!audio_on_state_last)
+        //if there was an audio pause and the user wants to split files
+        if((!audio_on_state_last)&&(ui->checkBox_split_audio_files->isChecked()))
         {
             //change audio file name if silence has been too long
             if((!audio_on_state_off_elapsed_timer.isValid())||(audio_on_state_off_elapsed_timer.hasExpired(1000.0*ui->doubleSpinBox_silence_before_file_split_in_s->value())))
@@ -153,7 +153,6 @@ JSquelch::JSquelch(QWidget *parent)
 
     setMaximumSize(minimumWidth(), minimumHeight());
     resize(minimumWidth(), minimumHeight());
-
 }
 
 void JSquelch::lineEditTextChanged(const QString &text)
@@ -197,6 +196,7 @@ void JSquelch::applySettings()
     hysteresis_db=ui->doubleSpinBox_hysteresis_db->value();
     threshold_level_db=ui->doubleSpinBox_snr_threshold_level_db->value();
     agc_on=ui->checkBox_agc->isChecked();
+    on_checkBox_split_audio_files_clicked();
     //just use some hard coded settings for the agc
     JDsp::AGC::Settings agc_settings=agc.getSettings();
     agc_settings.K=0.01;
@@ -266,6 +266,7 @@ void JSquelch::loadSettings()
     ui->spinBox_snr_streching_in_blocks->setValue(settings.value("spinBox_snr_streching_in_blocks",0).toInt());
     ui->soundcard_input->setCurrentText(settings.value("soundcard_input").toString());
     ui->doubleSpinBox_silence_before_file_split_in_s->setValue(settings.value("doubleSpinBox_silence_before_file_split_in_s",86400.0).toDouble());
+    ui->checkBox_split_audio_files->setChecked(settings.value("checkBox_split_audio_files",false).toBool());
 
     //noise estimator
     ui->spinBox_mne_moving_stats_window_size->setValue(settings.value("spinBox_mne_moving_stats_window_size",16).toInt());
@@ -297,6 +298,7 @@ void JSquelch::saveSettings()
     settings.setValue("spinBox_snr_streching_in_blocks",ui->spinBox_snr_streching_in_blocks->value());
     settings.setValue("soundcard_input",ui->soundcard_input->currentText());
     settings.setValue("doubleSpinBox_silence_before_file_split_in_s",ui->doubleSpinBox_silence_before_file_split_in_s->value());
+    settings.setValue("checkBox_split_audio_files",ui->checkBox_split_audio_files->isChecked());
 
     //noise estimator
     settings.setValue("spinBox_mne_moving_stats_window_size",ui->spinBox_mne_moving_stats_window_size->value());
@@ -337,3 +339,7 @@ void JSquelch::on_soundcard_input_currentIndexChanged(const QString &deviceName)
     }
 }
 
+void JSquelch::on_checkBox_split_audio_files_clicked()
+{
+    ui->doubleSpinBox_silence_before_file_split_in_s->setEnabled(ui->checkBox_split_audio_files->isChecked());
+}

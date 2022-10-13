@@ -34,6 +34,7 @@ protected:
     void closeEvent (QCloseEvent *event);
 private slots:
     void on_soundcard_input_currentIndexChanged(const QString &deviceName);
+    void on_checkBox_split_audio_files_clicked();
 private:
     Ui::JSquelch *ui;
     double hysteresis_db=2;
