@@ -15,6 +15,8 @@
 
 using namespace std;
 
+QString settings_name;
+
 void JSquelch::processAudio(const QVector<double> &input, QVector<double> &output)
 {
 
@@ -250,7 +252,8 @@ void JSquelch::applySettings()
 
 void JSquelch::loadSettings()
 {
-    QSettings settings("JontiSoft","JSquelch");
+
+    QSettings settings("JontiSoft",settings_name);
 
     //delay compensation
     ui->spinBox_fft_delay_size->setValue(settings.value("spinBox_fft_delay_size",51).toInt());
@@ -282,7 +285,7 @@ void JSquelch::loadSettings()
 
 void JSquelch::saveSettings()
 {
-    QSettings settings("JontiSoft","JSquelch");
+    QSettings settings("JontiSoft",settings_name);
 
     //delay compensation
     settings.setValue("spinBox_fft_delay_size",ui->spinBox_fft_delay_size->value());

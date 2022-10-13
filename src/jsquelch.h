@@ -9,6 +9,8 @@
 #include "src/compressaudiodiskwriter.h"
 #include <QElapsedTimer>
 
+extern QString settings_name;
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class JSquelch; }
 QT_END_NAMESPACE
