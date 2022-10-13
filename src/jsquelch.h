@@ -34,12 +34,12 @@ protected:
     void closeEvent (QCloseEvent *event);
 private slots:
     void on_soundcard_input_currentIndexChanged(const QString &deviceName);
-
 private:
     Ui::JSquelch *ui;
     double hysteresis_db=2;
     double threshold_level_db=6;
     bool audio_on_state=false;
+    bool audio_on_state_last=false;
     QElapsedTimer audio_on_state_off_elapsed_timer;
     bool agc_on=false;
     JDsp::MovingMax<double> snr_strech;

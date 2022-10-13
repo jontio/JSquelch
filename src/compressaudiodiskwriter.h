@@ -35,6 +35,7 @@ private:
     OggOpusEnc *enc;
     OggOpusComments *comments;
     QVector<opus_int16> buf;
+    void removeOldFileIfZeroBytes();
 };
 
 #endif // COMPRESSAUDIODISKWRITER_H

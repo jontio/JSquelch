@@ -73,29 +73,33 @@ void JSquelch::processAudio(const QVector<double> &input, QVector<double> &outpu
     //record audio if wanted
     if(audio_on_state)
     {
-
-        //change audio file name if silence has been too long
-        if((!audio_on_state_off_elapsed_timer.isValid())||(audio_on_state_off_elapsed_timer.hasExpired(1000)))
+        //if there was an audio pause
+        if(!audio_on_state_last)
         {
-            if(!audio_on_state_off_elapsed_timer.isValid())
+            //change audio file name if silence has been too long
+            if((!audio_on_state_off_elapsed_timer.isValid())||(audio_on_state_off_elapsed_timer.hasExpired(1000.0*ui->doubleSpinBox_silence_before_file_split_in_s->value())))
             {
-                qDebug()<<"new audio";
-            }
-            else
-            {
-                qDebug()<<"audio gap bigger than threshold of"<<audio_on_state_off_elapsed_timer.elapsed()<<"ms";
-            }
+                if(!audio_on_state_off_elapsed_timer.isValid())
+                {
+                    qDebug()<<"new audio";
+                }
+                else
+                {
+                    qDebug()<<"audio gap bigger than threshold. gap was"<<audio_on_state_off_elapsed_timer.elapsed()<<"ms";
+                }
 
-            qDebug()<<"time to change file name";
-            CompressAudioDiskWriter::Settings disk_writer_setings=audio_disk_writer.getSettings();
-            QDateTime datetime(QDateTime::currentDateTimeUtc());
-            disk_writer_setings.filename=datetime.toString("yyMMdd_hhmmss")+".ogg";
-            audio_disk_writer.setSettings(disk_writer_setings);
+                qDebug()<<"time to change file name";
+                CompressAudioDiskWriter::Settings disk_writer_setings=audio_disk_writer.getSettings();
+                QDateTime datetime(QDateTime::currentDateTimeUtc());
+                disk_writer_setings.filename=datetime.toString("yyMMdd_hhmmss")+".ogg";
+                audio_disk_writer.setSettings(disk_writer_setings);
+            }
         }
         audio_on_state_off_elapsed_timer.start();
 
         audio_disk_writer.writeAudio(output);
     }
+    audio_on_state_last=audio_on_state;
 
 }
 
@@ -261,6 +265,7 @@ void JSquelch::loadSettings()
     ui->checkBox_save_audio->setChecked(settings.value("checkBox_save_audio",false).toBool());
     ui->spinBox_snr_streching_in_blocks->setValue(settings.value("spinBox_snr_streching_in_blocks",0).toInt());
     ui->soundcard_input->setCurrentText(settings.value("soundcard_input").toString());
+    ui->doubleSpinBox_silence_before_file_split_in_s->setValue(settings.value("doubleSpinBox_silence_before_file_split_in_s",86400.0).toDouble());
 
     //noise estimator
     ui->spinBox_mne_moving_stats_window_size->setValue(settings.value("spinBox_mne_moving_stats_window_size",16).toInt());
@@ -291,6 +296,7 @@ void JSquelch::saveSettings()
     settings.setValue("checkBox_save_audio",ui->checkBox_save_audio->isChecked());
     settings.setValue("spinBox_snr_streching_in_blocks",ui->spinBox_snr_streching_in_blocks->value());
     settings.setValue("soundcard_input",ui->soundcard_input->currentText());
+    settings.setValue("doubleSpinBox_silence_before_file_split_in_s",ui->doubleSpinBox_silence_before_file_split_in_s->value());
 
     //noise estimator
     settings.setValue("spinBox_mne_moving_stats_window_size",ui->spinBox_mne_moving_stats_window_size->value());
@@ -330,3 +336,4 @@ void JSquelch::on_soundcard_input_currentIndexChanged(const QString &deviceName)
         }
     }
 }
+

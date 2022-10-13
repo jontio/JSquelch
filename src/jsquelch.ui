@@ -29,7 +29,7 @@
    <property name="maximumSize">
     <size>
      <width>935</width>
-     <height>493</height>
+     <height>500</height>
     </size>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -371,7 +371,7 @@
            <x>180</x>
            <y>100</y>
            <width>281</width>
-           <height>91</height>
+           <height>111</height>
           </rect>
          </property>
          <layout class="QFormLayout" name="formLayout_4">
@@ -429,6 +429,29 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_mne_moving_stats_window_size_5">
+            <property name="text">
+             <string>silence before file split</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_silence_before_file_split_in_s">
+            <property name="suffix">
+             <string>s</string>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>86400.000000000000000</double>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
         <widget class="QCheckBox" name="checkBox_agc">
@@ -448,9 +471,9 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>230</y>
+           <y>243</y>
            <width>451</width>
-           <height>34</height>
+           <height>31</height>
           </rect>
          </property>
          <property name="text">
@@ -474,7 +497,7 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>200</y>
+           <y>210</y>
            <width>451</width>
            <height>26</height>
           </rect>
@@ -518,7 +541,7 @@
      <x>0</x>
      <y>0</y>
      <width>936</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

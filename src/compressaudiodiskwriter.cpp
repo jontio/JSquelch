@@ -21,21 +21,7 @@ bool CompressAudioDiskWriter::setSettings(const Settings &settings)
     if(enc!=nullptr)ope_encoder_destroy(enc);
     if(comments!=nullptr)ope_comments_destroy(comments);
 
-    //get old filename and delete it if it's empty
-    QString cpath_old=this->settings.filepath.trimmed();
-    if((cpath_old.size()>0)&&(cpath_old[0]=="~"))cpath_old=QDir::homePath()+cpath_old.remove(0,1);
-    QString filename_full_old=(cpath_old+"/"+this->settings.filename);
-    if(filename_full_old!="/")
-    {
-        qDebug()<<"finished with enc"<<filename_full_old;
-        QFileInfo info(filename_full_old);
-        if(info.exists()&&(info.size()==0))
-        {
-            qDebug()<<"deleting old file as it's zero bytes";
-            QFile file(filename_full_old);
-            file.remove();
-        }
-    }
+    removeOldFileIfZeroBytes();
 
     this->settings=settings;
     buf.reserve(4096);
@@ -70,14 +56,35 @@ void CompressAudioDiskWriter::writeAudio(const QVector<double> &output)
 void CompressAudioDiskWriter::close()
 {
     if(!enc)return;
-    ope_encoder_drain(enc);
     ope_encoder_destroy(enc);
     ope_comments_destroy(comments);
     enc=nullptr;
     comments=nullptr;
+
+    removeOldFileIfZeroBytes();
+
 }
 bool CompressAudioDiskWriter::isOpen()
 {
     if(!enc)return false;
     return true;
+}
+
+void CompressAudioDiskWriter::removeOldFileIfZeroBytes()
+{
+    //get old filename and delete it if it's empty
+    QString cpath_old=this->settings.filepath.trimmed();
+    if((cpath_old.size()>0)&&(cpath_old[0]=="~"))cpath_old=QDir::homePath()+cpath_old.remove(0,1);
+    QString filename_full_old=(cpath_old+"/"+this->settings.filename);
+    if(filename_full_old!="/")
+    {
+        qDebug()<<"finished with enc"<<filename_full_old;
+        QFileInfo info(filename_full_old);
+        if(info.exists()&&(info.size()==0))
+        {
+            qDebug()<<"deleting old file as it's zero bytes";
+            QFile file(filename_full_old);
+            file.remove();
+        }
+    }
 }
