@@ -15,8 +15,8 @@ class CompressAudioDiskWriter
 public:
     struct Settings
     {
-        QString filepath="/tmp/";
-        QString filename="test.ogg";
+        QString filepath="";
+        QString filename="";
         int bitRate=48000;
         int nChannels=2;
         QString artist="CompressAudioWriter";

@@ -17,6 +17,26 @@ CompressAudioDiskWriter::~CompressAudioDiskWriter()
 }
 bool CompressAudioDiskWriter::setSettings(const Settings &settings)
 {
+
+    if(enc!=nullptr)ope_encoder_destroy(enc);
+    if(comments!=nullptr)ope_comments_destroy(comments);
+
+    //get old filename and delete it if it's empty
+    QString cpath_old=this->settings.filepath.trimmed();
+    if((cpath_old.size()>0)&&(cpath_old[0]=="~"))cpath_old=QDir::homePath()+cpath_old.remove(0,1);
+    QString filename_full_old=(cpath_old+"/"+this->settings.filename);
+    if(filename_full_old!="/")
+    {
+        qDebug()<<"finished with enc"<<filename_full_old;
+        QFileInfo info(filename_full_old);
+        if(info.exists()&&(info.size()==0))
+        {
+            qDebug()<<"deleting old file as it's zero bytes";
+            QFile file(filename_full_old);
+            file.remove();
+        }
+    }
+
     this->settings=settings;
     buf.reserve(4096);
     comments = ope_comments_create();
@@ -27,6 +47,8 @@ bool CompressAudioDiskWriter::setSettings(const Settings &settings)
     //deal with ~/ kind of thing
     QString cpath=settings.filepath.trimmed();
     if((cpath.size()>0)&&(cpath[0]=="~"))cpath=QDir::homePath()+cpath.remove(0,1);
+
+    qDebug()<<"creating enc"<<(cpath+"/"+settings.filename);
 
     enc = ope_encoder_create_file((cpath+"/"+settings.filename).toLocal8Bit(), comments, settings.bitRate, settings.nChannels, 0, &error);
     if(!enc)

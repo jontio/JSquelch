@@ -7,6 +7,7 @@
 #include "voicedetectionalgo.h"
 #include <QCloseEvent>
 #include "src/compressaudiodiskwriter.h"
+#include <QElapsedTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class JSquelch; }
@@ -39,6 +40,7 @@ private:
     double hysteresis_db=2;
     double threshold_level_db=6;
     bool audio_on_state=false;
+    QElapsedTimer audio_on_state_off_elapsed_timer;
     bool agc_on=false;
     JDsp::MovingMax<double> snr_strech;
 

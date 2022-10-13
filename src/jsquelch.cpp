@@ -73,7 +73,28 @@ void JSquelch::processAudio(const QVector<double> &input, QVector<double> &outpu
     //record audio if wanted
     if(audio_on_state)
     {
-       audio_disk_writer.writeAudio(output);
+
+        //change audio file name if silence has been too long
+        if((!audio_on_state_off_elapsed_timer.isValid())||(audio_on_state_off_elapsed_timer.hasExpired(1000)))
+        {
+            if(!audio_on_state_off_elapsed_timer.isValid())
+            {
+                qDebug()<<"new audio";
+            }
+            else
+            {
+                qDebug()<<"audio gap bigger than threshold of"<<audio_on_state_off_elapsed_timer.elapsed()<<"ms";
+            }
+
+            qDebug()<<"time to change file name";
+            CompressAudioDiskWriter::Settings disk_writer_setings=audio_disk_writer.getSettings();
+            QDateTime datetime(QDateTime::currentDateTimeUtc());
+            disk_writer_setings.filename=datetime.toString("yyMMdd_hhmmss")+".ogg";
+            audio_disk_writer.setSettings(disk_writer_setings);
+        }
+        audio_on_state_off_elapsed_timer.start();
+
+        audio_disk_writer.writeAudio(output);
     }
 
 }
