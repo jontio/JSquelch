@@ -16,9 +16,12 @@ CompressAudioDiskWriter::~CompressAudioDiskWriter()
     close();
 }
 bool CompressAudioDiskWriter::setSettings(const Settings &settings)
-{
-
-    if(enc!=nullptr)ope_encoder_destroy(enc);
+{    
+    if(enc!=nullptr)
+    {
+        ope_encoder_drain(enc);
+        ope_encoder_destroy(enc);
+    }
     if(comments!=nullptr)ope_comments_destroy(comments);
 
     removeOldFileIfZeroBytes();
@@ -56,6 +59,7 @@ void CompressAudioDiskWriter::writeAudio(const QVector<double> &output)
 void CompressAudioDiskWriter::close()
 {
     if(!enc)return;
+    ope_encoder_drain(enc);
     ope_encoder_destroy(enc);
     ope_comments_destroy(comments);
     enc=nullptr;
