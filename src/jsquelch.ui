@@ -432,7 +432,7 @@
           <item row="3" column="0">
            <widget class="QLabel" name="label_mne_moving_stats_window_size_5">
             <property name="text">
-             <string>silence before file split</string>
+             <string>silence split period</string>
             </property>
            </widget>
           </item>
@@ -539,7 +539,7 @@
           </rect>
          </property>
          <property name="text">
-          <string>Split audio files</string>
+          <string>Split files</string>
          </property>
         </widget>
        </widget>
