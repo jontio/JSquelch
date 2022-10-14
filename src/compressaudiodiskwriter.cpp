@@ -19,10 +19,13 @@ bool CompressAudioDiskWriter::setSettings(const Settings &settings)
 {    
     if(enc!=nullptr)
     {
-        ope_encoder_drain(enc);
+        if(writtenAudio)ope_encoder_drain(enc);
         ope_encoder_destroy(enc);
+        enc=nullptr;
     }
     if(comments!=nullptr)ope_comments_destroy(comments);
+
+    writtenAudio=false;
 
     removeOldFileIfZeroBytes();
 
@@ -55,15 +58,18 @@ void CompressAudioDiskWriter::writeAudio(const QVector<double> &output)
     for(int k=0;k<buf.size();k++)buf[k]=((double)output[k])*32768.0;
     int error=ope_encoder_write(enc, buf.data(), buf.size());
     if(error<0)RUNTIME_ERROR("Encoder write error",error);
+    writtenAudio=true;
 }
 void CompressAudioDiskWriter::close()
 {
     if(!enc)return;
-    ope_encoder_drain(enc);
+    if(writtenAudio)ope_encoder_drain(enc);
     ope_encoder_destroy(enc);
     ope_comments_destroy(comments);
     enc=nullptr;
     comments=nullptr;
+
+    writtenAudio=false;
 
     removeOldFileIfZeroBytes();
 
